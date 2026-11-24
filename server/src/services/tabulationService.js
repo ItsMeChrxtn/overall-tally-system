@@ -236,6 +236,24 @@ function hashSheets(configVersion, sheets) {
   return sha256(`${configVersion}|${parts.join('|')}`);
 }
 
+/**
+ * Awards configured on the category; a Multimedia Film category with none configured gets its
+ * standard awards automatically (no setup step needed):
+ *   Best Story / Screenplay – highest average in the "Script / Storyboard" criterion
+ *   Best Multimedia Film    – 1st place
+ */
+function effectiveAwards(category, config) {
+  if (category.specialAwards?.length) {
+    return category.specialAwards.map((a) => ({ name: a.name, basis: a.basis, criterionId: a.criterion }));
+  }
+  if (!/multimedia\s*film/i.test(category.name || '')) return [];
+  const script = (config.criteria || []).find((c) => /script|storyboard|screenplay/i.test(c.name || ''));
+  return [
+    ...(script ? [{ name: 'Best Story / Screenplay', basis: 'criterion', criterionId: script.criterionId }] : []),
+    { name: 'Best Multimedia Film', basis: 'final' },
+  ];
+}
+
 /** Computes the current tally for a category (not saved). */
 export async function computeLiveCategoryTally(category) {
   const config = await getEffectiveConfig(category);
@@ -244,7 +262,7 @@ export async function computeLiveCategoryTally(category) {
   const relevant = sheets.filter((s) => !config.locked || s.configVersion === config.version || s.status !== 'submitted');
   const tally = computeCategoryTally(config, relevant);
   // Special awards are presentation titles (not part of the locked snapshot), derived from the tally.
-  const awards = (category.specialAwards || []).map((a) => ({ name: a.name, basis: a.basis, criterionId: a.criterion }));
+  const awards = effectiveAwards(category, config);
   tally.awards = computeSpecialAwards(tally, awards);
   let dataHash = hashSheets(config.version, sheets.filter((s) => s.status === 'submitted'));
   // Changing the awards after a result is generated makes that result stale (only when awards exist, so older hashes stay valid)
