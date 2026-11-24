@@ -8,3 +8,6 @@ server/uploads/*
 .DS_Store
 coverage/
 ACCOUNTS.local.txt
+
+# Local editor/assistant settings
+.claude/
