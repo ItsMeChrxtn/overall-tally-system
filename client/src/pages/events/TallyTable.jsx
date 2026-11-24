@@ -163,6 +163,45 @@ export function OverallTallyTable({ tally, extras = {} }) {
   );
 }
 
+/** Special awards derived from the tally (e.g. Best Story / Screenplay, Best Multimedia Film). */
+export function AwardsPanel({ awards, extras = {}, decimalPlaces = 2 }) {
+  if (!awards?.length) return null;
+  return (
+    <div className="grid gap-3 p-5 sm:grid-cols-2">
+      {awards.map((a) => (
+        <div key={a.name} className="rounded-xl border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-4">
+          <p className="text-xs font-semibold tracking-wide text-amber-700 uppercase">{a.name}</p>
+          <p className="mt-0.5 text-xs text-slate-500">{a.basis === 'final' ? 'Highest final score (1st place)' : `Highest average in “${a.criterionName || '—'}”`}</p>
+          {a.winners.length ? (
+            <ul className="mt-3 space-y-2">
+              {a.winners.map((w) => (
+                <li key={w.contestantId} className="flex items-center gap-2.5">
+                  <Avatar name={w.name} src={extras[w.contestantId]?.photo} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-slate-900">
+                      #{w.number} {w.name}
+                    </p>
+                    {extras[w.contestantId]?.representing && <p className="truncate text-xs text-slate-500">{extras[w.contestantId].representing}</p>}
+                  </div>
+                  <span className="text-sm font-semibold text-slate-900 tabular-nums">{num(w.value, decimalPlaces)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-slate-400">No awardee yet</p>
+          )}
+          {a.note && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-800">
+              {a.tied && <Badge tone="amber">Shared</Badge>}
+              {a.note}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function TiesPanel({ ties }) {
   if (!ties?.length) return null;
   return (

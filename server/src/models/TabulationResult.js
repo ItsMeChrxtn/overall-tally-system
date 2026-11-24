@@ -26,6 +26,7 @@ const resultSchema = new mongoose.Schema(
     criteria: Mixed,
     rows: Mixed,
     ties: Mixed,
+    awards: Mixed,
     missing: Mixed,
     warnings: [String],
     summary: Mixed,

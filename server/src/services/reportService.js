@@ -80,6 +80,7 @@ async function resolveCategoryData(category, resultId) {
         judges: result.judges,
         criteria: result.criteria,
         ties: result.ties,
+        awards: result.awards,
         missing: result.missing,
         scoringMethod: result.scoringMethod,
         customStrategy: result.customStrategy,
@@ -90,6 +91,25 @@ async function resolveCategoryData(category, resultId) {
   }
   const { tally } = await computeLiveCategoryTally(category);
   return { result: null, statusLabel: `PRELIMINARY — LIVE COMPUTATION (NOT SAVED)${tally.complete ? '' : ' · INCOMPLETE'}`, tally };
+}
+
+function specialAwardsSection(awards, dp, heading = 'Special Awards') {
+  if (!awards?.length) return null;
+  return {
+    heading,
+    columns: [
+      { key: 'award', label: 'Award', width: 26 },
+      { key: 'winner', label: 'Awardee', width: 30 },
+      { key: 'basis', label: 'Basis', width: 30 },
+      { key: 'score', label: 'Score', align: 'right', width: 12 },
+    ],
+    rows: awards.map((a) => ({
+      award: a.name,
+      winner: a.winners.length ? a.winners.map((w) => `#${w.number} ${w.name}`).join(', ') + (a.tied ? ' (shared)' : '') : '—',
+      basis: (a.basis === 'final' ? 'Highest final score (1st place)' : `Highest average in "${a.criterionName || '—'}"`) + (a.note ? ` — ${a.note}` : ''),
+      score: a.winners.length ? fmt(a.winners[0].value, dp) : '—',
+    })),
+  };
 }
 
 function judgeScoreFor(js, method, strategy, dp) {
@@ -129,6 +149,8 @@ async function tallyReport({ category, params }) {
       rows,
     },
   ];
+  const awardsSection = specialAwardsSection(tally.awards, dp);
+  if (awardsSection) sections.push(awardsSection);
   if (tally.ties?.length) {
     sections.push({ heading: 'Tie-Breaking Decisions', columns: [{ key: 'note', label: 'Decision' }], rows: tally.ties.map((t) => ({ note: t.note })) });
   }
@@ -310,6 +332,8 @@ async function finalResultsReport({ event }) {
       ],
       rows: r.rows.filter((x) => x.rank !== null).map((x) => ({ rank: `${x.rank}${x.tied ? ' (tie)' : ''}`, number: x.number, name: x.name, final: fmt(x.finalScore, r.decimalPlaces) })),
     });
+    const awardsSection = specialAwardsSection(r.awards, r.decimalPlaces, `${r.title} — Special Awards`);
+    if (awardsSection) sections.push(awardsSection);
   }
   if (!sections.length) sections.push({ heading: 'No approved results yet', columns: [{ key: 'note', label: 'Note' }], rows: [{ note: 'Results appear here once they are approved.' }] });
   const approver = parts.find((p) => p.approvedBy)?.approvedBy;

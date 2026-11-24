@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Crown, MapPin, Medal, Printer } from 'lucide-react';
+import { ArrowLeft, Award, CalendarDays, Crown, MapPin, Medal, Printer } from 'lucide-react';
 import api, { apiErrorMessage, fileUrl } from '../../api/client';
 import { Avatar, Badge, Button, EmptyState, Skeleton, cx } from '../../components/ui';
 import { eventTypeLabel, formatDate, formatDateTime, num, ordinal } from '../../lib/format';
@@ -104,6 +104,30 @@ export default function PublicResultsPage() {
               </p>
             </div>
             <Podium rows={s.rows} showScores={showScores} />
+            {s.awards?.length > 0 && (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {s.awards.map((a) => (
+                  <div key={a.name} className="rounded-xl border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-4">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-700 uppercase">
+                      <Award className="size-3.5" /> {a.name}
+                      {a.tied && <span className="font-normal normal-case">(shared)</span>}
+                    </p>
+                    {a.winners.map((w) => (
+                      <div key={w.number} className="mt-3 flex items-center gap-3">
+                        <Avatar name={w.name} src={w.photo} size="md" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-slate-900">
+                            #{w.number} {w.name}
+                          </p>
+                          {w.representing && <p className="text-xs text-slate-500">{w.representing}</p>}
+                        </div>
+                        {showScores && w.value !== undefined && <span className="font-semibold text-brand-700 tabular-nums">{num(w.value)}</span>}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
               <table className="table-base">
                 <thead>

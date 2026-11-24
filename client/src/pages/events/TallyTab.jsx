@@ -7,7 +7,7 @@ import StatusBadge from '../../components/StatusBadge';
 import { formatDateTime } from '../../lib/format';
 import { confirmAction, showError, toast } from '../../lib/alerts';
 import { useEventSocket } from '../../lib/socket';
-import { CategoryTallyTable, MissingPanel, OverallTallyTable, TiesPanel } from './TallyTable';
+import { AwardsPanel, CategoryTallyTable, MissingPanel, OverallTallyTable, TiesPanel } from './TallyTable';
 
 function Versions({ results, eventId }) {
   if (!results?.length) return <p className="px-5 py-6 text-sm text-slate-500">No saved versions yet.</p>;
@@ -206,6 +206,12 @@ export default function TallyTab() {
               )}
             </Card>
 
+            {!isOverall && tally?.awards?.length > 0 && (
+              <Card>
+                <CardHeader title="Special awards" description={tally.complete ? 'Derived from the tally above.' : 'Preliminary — may change until all score sheets are in.'} />
+                <AwardsPanel awards={tally.awards} extras={data.extras} decimalPlaces={tally.decimalPlaces} />
+              </Card>
+            )}
             {tally?.ties?.length > 0 && (
               <Card>
                 <CardHeader title="Tie detection" description="Ties are resolved only by the configured rules; unresolved ties share the rank." />

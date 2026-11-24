@@ -153,3 +153,72 @@ test('overall weighted tally normalizes category scores', () => {
   assert.equal(o.rows[0].name, 'Cara');
   assert.equal(o.warnings.length, 0);
 });
+
+// ---------------------------------------------------------------- special awards (Multimedia Film Festival)
+import { computeSpecialAwards } from '../src/services/scoringEngine.js';
+
+const filmCrit = [
+  { criterionId: 'concept', name: 'Concept', weight: 0, minScore: 1, maxScore: 20, order: 1 },
+  { criterionId: 'script', name: 'Script / Storyboard', weight: 0, minScore: 1, maxScore: 20, order: 2 },
+  { criterionId: 'quality', name: 'Quality', weight: 0, minScore: 1, maxScore: 20, order: 3 },
+];
+const film = (judge, contestant, concept, script, quality) => ({
+  judge,
+  contestant,
+  status: 'submitted',
+  scores: [
+    { criterion: 'concept', value: concept },
+    { criterion: 'script', value: script },
+    { criterion: 'quality', value: quality },
+  ],
+});
+const filmConfig = { scoringMethod: 'average', decimalPlaces: 2, criteria: filmCrit, judges: judges.slice(0, 2), contestants, tieBreakRules: [{ type: 'shared' }] };
+const filmAwards = [
+  { name: 'Best Story / Screenplay', basis: 'criterion', criterionId: 'script' },
+  { name: 'Best Multimedia Film', basis: 'final' },
+];
+
+test('special awards: best in criterion and best overall can go to different films', () => {
+  const tally = computeCategoryTally(filmConfig, [
+    film('j1', 'k1', 20, 14, 20), film('j2', 'k1', 19, 15, 20), // Ana: best total, weaker script
+    film('j1', 'k2', 12, 19, 12), film('j2', 'k2', 13, 20, 12), // Ben: best script
+    film('j1', 'k3', 10, 10, 10), film('j2', 'k3', 10, 10, 10),
+  ]);
+  const [story, best] = computeSpecialAwards(tally, filmAwards);
+  assert.equal(story.criterionName, 'Script / Storyboard');
+  assert.deepEqual(story.winners.map((w) => w.name), ['Ben']);
+  assert.equal(story.winners[0].value, 19.5);
+  assert.deepEqual(best.winners.map((w) => w.name), ['Ana']);
+  assert.equal(best.winners[0].value, tally.rows[0].finalScore);
+});
+
+test('special awards: a criterion tie goes to the better overall rank, else it is shared', () => {
+  const resolved = computeCategoryTally(filmConfig, [
+    film('j1', 'k1', 20, 18, 20), film('j2', 'k1', 20, 18, 20),
+    film('j1', 'k2', 10, 18, 10), film('j2', 'k2', 10, 18, 10),
+    film('j1', 'k3', 5, 5, 5), film('j2', 'k3', 5, 5, 5),
+  ]);
+  const [story] = computeSpecialAwards(resolved, filmAwards);
+  assert.deepEqual(story.winners.map((w) => w.name), ['Ana']);
+  assert.equal(story.tied, false);
+  assert.match(story.note, /better overall rank/);
+
+  const shared = computeCategoryTally(filmConfig, [
+    film('j1', 'k1', 15, 18, 15), film('j2', 'k1', 15, 18, 15),
+    film('j1', 'k2', 15, 18, 15), film('j2', 'k2', 15, 18, 15),
+    film('j1', 'k3', 5, 5, 5), film('j2', 'k3', 5, 5, 5),
+  ]);
+  const [s2, b2] = computeSpecialAwards(shared, filmAwards);
+  assert.equal(s2.tied, true);
+  assert.equal(s2.winners.length, 2);
+  assert.equal(b2.tied, true);
+});
+
+test('special awards: unknown criterion and no scores are reported, not guessed', () => {
+  const empty = computeCategoryTally(filmConfig, []);
+  const [story, best] = computeSpecialAwards(empty, filmAwards);
+  assert.equal(story.winners.length, 0);
+  assert.equal(best.winners.length, 0);
+  const [missing] = computeSpecialAwards(empty, [{ name: 'X', basis: 'criterion', criterionId: 'nope' }]);
+  assert.match(missing.note, /not part of this scoring configuration/);
+});

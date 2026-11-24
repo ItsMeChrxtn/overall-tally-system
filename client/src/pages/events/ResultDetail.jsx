@@ -9,7 +9,7 @@ import { formatDateTime, titleCase } from '../../lib/format';
 import { confirmAction, promptReason, showError, toast } from '../../lib/alerts';
 import { useEventSocket } from '../../lib/socket';
 import { exportExcel, exportPdf, printReport } from '../../lib/reportExport';
-import { CategoryTallyTable, MissingPanel, OverallTallyTable, TiesPanel } from './TallyTable';
+import { AwardsPanel, CategoryTallyTable, MissingPanel, OverallTallyTable, TiesPanel } from './TallyTable';
 
 const STEPS = [
   { key: 'preliminary', label: 'Preliminary' },
@@ -215,6 +215,12 @@ export default function ResultDetail() {
             />
             {isOverall ? <OverallTallyTable tally={tally} extras={extras} /> : <CategoryTallyTable tally={tally} extras={extras} mode={mode} />}
           </Card>
+          {result.awards?.length > 0 && (
+            <Card>
+              <CardHeader title="Special awards" description="Stored with this version at generation time." />
+              <AwardsPanel awards={result.awards} extras={extras} decimalPlaces={result.decimalPlaces} />
+            </Card>
+          )}
           {result.ties?.length > 0 && (
             <Card>
               <CardHeader title="Tie-breaking decisions" />

@@ -84,6 +84,11 @@ const EVENTS = [
           (name) => [name, 0, 20, FILM_RUBRIC]
         ),
         minScore: 1,
+        // Best Story / Screenplay = highest average in "Script / Storyboard"; Best Multimedia Film = 1st place overall.
+        specialAwards: [
+          { name: 'Best Story / Screenplay', basis: 'criterion', criterion: 'Script / Storyboard' },
+          { name: 'Best Multimedia Film', basis: 'final' },
+        ],
       },
     ],
   },
@@ -161,17 +166,48 @@ for (const def of EVENTS) {
       console.log(`  + Category: ${cdef.name} (${cdef.scoringMethod})`);
     }
 
+    await seedCriteria(event, category, cdef);
+    await seedSpecialAwards(event, category, cdef);
+  }
+}
+
+async function seedSpecialAwards(event, category, cdef) {
+  if (!cdef.specialAwards?.length) return;
+  if (category.specialAwards?.length) {
+    console.log(`  = ${cdef.name}: special awards already set, left unchanged.`);
+    return;
+  }
+  const awards = [];
+  for (const a of cdef.specialAwards) {
+    if (a.basis !== 'criterion') {
+      awards.push({ name: a.name, basis: a.basis });
+      continue;
+    }
+    const crit = await Criterion.findOne({ category: category._id, name: a.criterion, isActive: true });
+    if (!crit) {
+      console.log(`  ! ${cdef.name}: criterion "${a.criterion}" not found — "${a.name}" skipped.`);
+      continue;
+    }
+    awards.push({ name: a.name, basis: 'criterion', criterion: crit._id });
+  }
+  category.specialAwards = awards;
+  await category.save();
+  await audit(req, { action: 'category.updated', entityType: 'Category', entityId: category._id, entityLabel: category.name, event: event._id, after: { specialAwards: awards.map((a) => a.name) } });
+  console.log(`  + ${cdef.name}: special awards — ${awards.map((a) => a.name).join(', ')}`);
+}
+
+async function seedCriteria(event, category, cdef) {
     if (!cdef.criteria.length) {
       console.log(`  ! ${cdef.name}: no criteria provided yet — add them in the app.`);
-      continue;
+      return;
     }
     if (category.configLocked) {
       console.log(`  = ${cdef.name}: scoring is locked, criteria left unchanged.`);
-      continue;
+      return;
     }
     if (await Criterion.exists({ category: category._id })) {
       console.log(`  = ${cdef.name}: already has criteria, left unchanged.`);
-      continue;
+      return;
     }
 
     await Criterion.insertMany(
@@ -191,7 +227,6 @@ for (const def of EVENTS) {
     const total = cdef.criteria.reduce((s, c) => s + c[1], 0);
     await audit(req, { action: 'criteria.imported', entityType: 'Category', entityId: category._id, entityLabel: category.name, event: event._id, meta: { count: cdef.criteria.length } });
     console.log(`  + ${cdef.name}: ${cdef.criteria.length} criteria${total ? ` (weights ${total}%)` : ''}`);
-  }
 }
 
 await mongoose.disconnect();

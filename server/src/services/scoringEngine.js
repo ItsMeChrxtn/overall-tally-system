@@ -413,6 +413,56 @@ export function computeCategoryTally(config, sheets) {
   };
 }
 
+// ---------------------------------------------------------------- special awards
+
+/**
+ * Derives special awards (e.g. "Best Story / Screenplay", "Best Film") from a computed category tally.
+ *   final     – the contestant(s) ranked 1st in the category
+ *   criterion – the highest average (across judges) in one criterion; a tie there goes to the
+ *               better overall rank, and anything still tied is shared
+ * @param tally   result of computeCategoryTally
+ * @param awards  [{ name, basis, criterionId }]
+ */
+export function computeSpecialAwards(tally, awards = []) {
+  const dp = tally.decimalPlaces ?? 2;
+  const brief = (r, value) => ({ contestantId: r.contestantId, number: r.number, name: r.name, rank: r.rank, value });
+  const who = (list) => list.map((r) => `#${r.number} ${r.name}`).join(', ');
+
+  return (awards || []).map((a) => {
+    const base = { name: a.name, basis: a.basis, criterionId: id(a.criterionId) ?? null, criterionName: null, winners: [], tied: false, note: null };
+
+    if (a.basis === 'final') {
+      const winners = tally.rows.filter((r) => r.rank === 1);
+      if (!winners.length) return { ...base, note: 'No contestant has been ranked yet.' };
+      const tied = winners.length > 1;
+      return { ...base, winners: winners.map((r) => brief(r, r.finalScore)), tied, note: tied ? `Shared: ${who(winners)} are tied for 1st place.` : null };
+    }
+
+    const crit = tally.criteria.find((c) => c.criterionId === base.criterionId);
+    if (!crit) return { ...base, note: 'The selected criterion is not part of this scoring configuration.' };
+    base.criterionName = crit.name;
+    const scored = tally.rows
+      .map((r) => ({ r, v: r.criterionAverages?.find((x) => x.criterionId === crit.criterionId)?.average ?? null }))
+      .filter((x) => x.v !== null);
+    if (!scored.length) return { ...base, note: `No scores for "${crit.name}" yet.` };
+
+    const best = Math.max(...scored.map((x) => round(x.v, dp)));
+    let top = scored.filter((x) => round(x.v, dp) === best);
+    let note = null;
+    if (top.length > 1) {
+      const ranks = top.map((x) => x.r.rank).filter((k) => Number.isFinite(k));
+      const bestRank = ranks.length ? Math.min(...ranks) : null; // rank 1 is best for every method
+      const narrowed = bestRank === null ? top : top.filter((x) => x.r.rank === bestRank);
+      note =
+        narrowed.length === 1
+          ? `Tie at ${best} in "${crit.name}" between ${who(top.map((x) => x.r))} resolved by better overall rank.`
+          : `Shared: ${who(narrowed.map((x) => x.r))} are tied at ${best} in "${crit.name}" and in overall rank.`;
+      top = narrowed;
+    }
+    return { ...base, winners: top.map((x) => brief(x.r, round(x.v, dp))), tied: top.length > 1, note };
+  });
+}
+
 /** Maximum attainable final score for a criteria-based category (used to normalize into an overall tally). */
 export function maxPossibleScore(config) {
   const crit = config.criteria || [];

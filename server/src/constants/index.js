@@ -32,6 +32,9 @@ export const CUSTOM_STRATEGIES = ['trimmed_mean', 'rank_of_scores'];
 
 export const TIE_RULES = ['highest_weight_criterion', 'criterion', 'judge', 'shared'];
 
+/** Special award basis: highest final score in the category, or highest average in one criterion. */
+export const AWARD_BASES = ['final', 'criterion'];
+
 export const OVERALL_METHODS = ['weighted', 'rank_sum'];
 
 export const CONTESTANT_STATUS = ['active', 'withdrawn', 'disqualified'];

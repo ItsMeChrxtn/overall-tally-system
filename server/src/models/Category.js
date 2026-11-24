@@ -1,11 +1,21 @@
 import mongoose from 'mongoose';
-import { CATEGORY_STATUS, CUSTOM_STRATEGIES, SCORING_METHODS, TIE_RULES } from '../constants/index.js';
+import { AWARD_BASES, CATEGORY_STATUS, CUSTOM_STRATEGIES, SCORING_METHODS, TIE_RULES } from '../constants/index.js';
 
 const tieRuleSchema = new mongoose.Schema(
   {
     type: { type: String, enum: TIE_RULES, required: true },
     criterion: { type: mongoose.Schema.Types.ObjectId, ref: 'Criterion' },
     judge: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  },
+  { _id: false }
+);
+
+/** Extra titles derived from the tally, e.g. "Best Story / Screenplay" = highest in one criterion. */
+const specialAwardSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true, maxlength: 120 },
+    basis: { type: String, enum: AWARD_BASES, required: true },
+    criterion: { type: mongoose.Schema.Types.ObjectId, ref: 'Criterion' },
   },
   { _id: false }
 );
@@ -21,6 +31,7 @@ const categorySchema = new mongoose.Schema(
     decimalPlaces: { type: Number, min: 0, max: 4, default: 2 },
     instructions: { type: String, trim: true, maxlength: 2000 },
     tieBreakRules: { type: [tieRuleSchema], default: [{ type: 'highest_weight_criterion' }, { type: 'shared' }] },
+    specialAwards: { type: [specialAwardSchema], default: [] },
     contestants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Contestant' }],
     includeInOverall: { type: Boolean, default: false },
     overallWeight: { type: Number, min: 0, max: 100, default: 0 },

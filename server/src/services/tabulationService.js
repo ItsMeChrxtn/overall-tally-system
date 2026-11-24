@@ -10,7 +10,7 @@ import TabulationResult from '../models/TabulationResult.js';
 import ApiError from '../utils/ApiError.js';
 import { sha256 } from '../utils/token.js';
 import { RESULT_LOCKING_STATUSES, ROLES } from '../constants/index.js';
-import { computeCategoryTally, computeOverallTally, maxPossibleScore, methodUsesCriteria, CUSTOM_STRATEGY_REGISTRY } from './scoringEngine.js';
+import { computeCategoryTally, computeOverallTally, computeSpecialAwards, maxPossibleScore, methodUsesCriteria, CUSTOM_STRATEGY_REGISTRY } from './scoringEngine.js';
 import { audit } from './auditService.js';
 import { notify } from './notificationService.js';
 import { emitToEvent } from './realtime.js';
@@ -243,7 +243,12 @@ export async function computeLiveCategoryTally(category) {
   // Only sheets produced under the effective configuration count
   const relevant = sheets.filter((s) => !config.locked || s.configVersion === config.version || s.status !== 'submitted');
   const tally = computeCategoryTally(config, relevant);
-  const dataHash = hashSheets(config.version, sheets.filter((s) => s.status === 'submitted'));
+  // Special awards are presentation titles (not part of the locked snapshot), derived from the tally.
+  const awards = (category.specialAwards || []).map((a) => ({ name: a.name, basis: a.basis, criterionId: a.criterion }));
+  tally.awards = computeSpecialAwards(tally, awards);
+  let dataHash = hashSheets(config.version, sheets.filter((s) => s.status === 'submitted'));
+  // Changing the awards after a result is generated makes that result stale (only when awards exist, so older hashes stay valid)
+  if (awards.length) dataHash = sha256(`${dataHash}|awards:${awards.map((a) => `${a.name}/${a.basis}/${a.criterionId ?? ''}`).join(';')}`);
   return { config, tally, dataHash };
 }
 
@@ -315,6 +320,7 @@ export async function generateResult(req, { event, category }) {
       criteria: tally.criteria,
       rows: tally.rows,
       ties: tally.ties,
+      awards: tally.awards,
       missing: tally.missing,
       warnings: tally.warnings,
       summary: { ...tally.summary, methodLabel: tally.methodLabel },
@@ -372,7 +378,7 @@ export async function verifyResultIntegrity(result) {
       throw ApiError.conflict('The scoring configuration changed after this result was generated. Generate a new version.', 'RESULT_STALE');
     }
     const { dataHash } = await computeLiveCategoryTally(category);
-    if (dataHash !== result.dataHash) throw ApiError.conflict('Score sheets changed after this result was generated. Generate a new version.', 'RESULT_STALE');
+    if (dataHash !== result.dataHash) throw ApiError.conflict('Score sheets or special awards changed after this result was generated. Generate a new version.', 'RESULT_STALE');
     return category;
   }
   const event = await Event.findById(result.event);

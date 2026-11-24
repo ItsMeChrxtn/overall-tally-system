@@ -56,6 +56,19 @@ export const publicEvent = asyncHandler(async (req, res) => {
             members: info[row.contestantId]?.isTeam ? info[row.contestantId]?.members : undefined,
             finalScore: showScores ? row.finalScore : undefined,
           })),
+        awards: (r.awards || [])
+          .filter((a) => a.winners?.length)
+          .map((a) => ({
+            name: a.name,
+            tied: a.tied,
+            winners: a.winners.map((w) => ({
+              number: w.number,
+              name: w.name,
+              photo: info[w.contestantId]?.photo,
+              representing: info[w.contestantId]?.representing,
+              value: showScores ? w.value : undefined,
+            })),
+          })),
       };
     })
     .sort((a, b) => a.order - b.order);
