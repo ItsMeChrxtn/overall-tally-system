@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { ClipboardList, FileBarChart, FileSpreadsheet, FileText, Gavel, ListOrdered, Printer, ScrollText, Sheet, Trophy, UserRound } from 'lucide-react';
 import api from '../../api/client';
-import { Badge, Button, Card, CardHeader, Field, Input, Select, cx } from '../../components/ui';
+import { Button, Card, CardHeader, Field, Input, Select, cx } from '../../components/ui';
 import { showError } from '../../lib/alerts';
-import { exportExcel, exportPdf, fetchReport, printReport } from '../../lib/reportExport';
+import { exportExcel, exportPdf, fetchReport, printReport, statusNote, winnersTable } from '../../lib/reportExport';
 
 const TYPES = [
   { key: 'tally', label: 'Overall Tally Sheet', icon: Sheet, needs: ['category'], desc: 'Every judge’s score, criterion averages, final score and rank.' },
@@ -167,22 +167,21 @@ export default function ReportsTab() {
 
         {preview && (
           <Card>
-            <div className="border-b border-slate-100 px-5 py-4 text-center">
-              {preview.organization && <p className="text-xs text-slate-500">{preview.organization}</p>}
-              <p className="text-base font-semibold text-slate-900">{preview.event.name}</p>
-              <p className="text-sm font-medium text-slate-700">
+            <div className="border-b-4 border-double border-slate-800 px-5 py-5 text-center">
+              {preview.organization && <p className="text-sm font-bold text-slate-900">{preview.organization}</p>}
+              {preview.subheading && <p className="text-xs text-slate-600">{preview.subheading}</p>}
+              <p className="mt-3 text-base font-bold text-slate-900">{preview.event.name}</p>
+              <p className="text-sm text-slate-800">
                 {preview.title}
-                {preview.subtitle && ` — ${preview.subtitle}`}
+                {preview.subtitle && preview.subtitle !== preview.event.name && ` — ${preview.subtitle}`}
               </p>
-              <p className="text-xs text-slate-500">
-                {preview.event.date} · {preview.event.venue}
-              </p>
-              {preview.statusLabel && <Badge tone="brand" className="mt-2">{preview.statusLabel}</Badge>}
+              <p className="text-xs text-slate-500">{[preview.event.date, preview.event.venue].filter((v) => v && v !== '—').join('  |  ')}</p>
+              {statusNote(preview.statusLabel) && <p className="mt-1 text-xs font-bold tracking-wide text-slate-500">{statusNote(preview.statusLabel)}</p>}
             </div>
             <div className="space-y-6 p-5">
-              {preview.sections.map((s, i) => (
+              {[winnersTable(preview), ...preview.sections].filter(Boolean).map((s, i) => (
                 <div key={i}>
-                  <p className="text-sm font-semibold text-slate-900">{s.heading}</p>
+                  <p className="text-xs font-bold tracking-wide text-slate-900 uppercase">{s.heading}</p>
                   {s.note && <p className="mb-2 text-xs text-slate-500 italic">{s.note}</p>}
                   <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200">
                     {s.keyValues ? (
@@ -209,7 +208,7 @@ export default function ReportsTab() {
                         </thead>
                         <tbody>
                           {s.rows.map((r, k) => (
-                            <tr key={k} className={r._bold ? 'font-semibold' : ''}>
+                            <tr key={k} className={cx(r._bold && 'font-semibold')}>
                               {s.columns.map((c) => (
                                 <td key={c.key} className={cx('tabular-nums', c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : '')}>
                                   {r[c.key]}

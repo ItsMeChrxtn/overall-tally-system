@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { AlertTriangle, BadgeCheck, CalendarCheck2, CalendarRange, ClipboardList, Clock3, Gavel, ListChecks, ShieldCheck, Trophy, UserRound, Users } from 'lucide-react';
+import { AlertTriangle, BadgeCheck, CalendarCheck2, CalendarRange, ClipboardList, Clock3, Gavel, ListChecks, ShieldCheck, Trophy, UserRound } from 'lucide-react';
 import api from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import { Alert, Badge, Card, CardHeader, EmptyState, PageHeader, PageSkeleton, ProgressBar, StatCard } from '../../components/ui';
@@ -111,8 +111,6 @@ function SuperAdminDashboard({ d }) {
         <StatCard label="Total events" value={d.stats.totalEvents} icon={CalendarRange} />
         <StatCard label="Active events" value={d.stats.activeEvents} icon={Clock3} tone="violet" />
         <StatCard label="Completed events" value={d.stats.completedEvents} icon={CalendarCheck2} tone="green" />
-        <StatCard label="Results awaiting approval" value={d.stats.pendingApprovals} icon={ShieldCheck} tone="amber" />
-        <StatCard label="User accounts" value={d.stats.users} icon={Users} tone="gray" />
         <StatCard label="Judges" value={d.stats.judges} icon={Gavel} tone="blue" />
         <StatCard label="Contestants" value={d.stats.contestants} icon={UserRound} tone="gray" />
       </div>

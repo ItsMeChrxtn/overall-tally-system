@@ -86,7 +86,7 @@ export default function TallyTab() {
       title: 'Save a new result version?',
       text: tally?.complete
         ? 'The backend will recompute the tally from all submitted score sheets and store it as a preliminary result for verification.'
-        : 'Some score sheets are missing. This version will be marked INCOMPLETE and cannot be submitted for approval until all sheets are in.',
+        : 'Some score sheets are missing. This version will be marked INCOMPLETE and cannot be finalized until all sheets are in.',
       confirmText: 'Generate version',
     });
     if (!ok) return;
@@ -172,7 +172,7 @@ export default function TallyTab() {
             {tally && (
               <Alert tone={tally.complete ? 'green' : 'amber'} icon={tally.complete ? CheckCircle2 : TriangleAlert} title={tally.complete ? 'All required score sheets are submitted' : 'PRELIMINARY — incomplete score sheets'}>
                 {tally.complete
-                  ? 'Rankings below are computed by the backend scoring engine. Generate a result version to start verification.'
+                  ? 'Rankings below are computed by the backend scoring engine. Generate a result version, check it, then finalize it.'
                   : event.settings?.allowIncompleteRanking
                     ? 'This event allows rankings with incomplete sheets, but missing sheets are listed below.'
                     : 'Rankings are not official until every assigned judge submits every sheet.'}

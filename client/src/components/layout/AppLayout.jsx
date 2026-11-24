@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, CalendarRange, ChevronDown, ClipboardCheck, Globe, History, LayoutDashboard, LogOut, Menu, ScrollText, Settings, ShieldCheck, UserCircle, Users, X } from 'lucide-react';
+import { BarChart3, CalendarRange, ChevronDown, ClipboardCheck, Globe, History, LayoutDashboard, LogOut, Menu, ScrollText, Settings, ShieldCheck, UserCircle, X } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLE_LABELS } from '../../lib/format';
 import { Avatar, cx } from '../ui';
@@ -18,7 +18,6 @@ const NAV = {
     {
       section: 'Administration',
       items: [
-        { to: '/app/users', label: 'Users', icon: Users },
         { to: '/app/audit-logs', label: 'Audit Logs', icon: ScrollText },
         { to: '/app/settings', label: 'System Settings', icon: Settings },
       ],
@@ -30,7 +29,6 @@ const NAV = {
     {
       section: 'Administration',
       items: [
-        { to: '/app/users', label: 'Judges & Tabulators', icon: Users },
         { to: '/app/audit-logs', label: 'Activity Logs', icon: ScrollText },
       ],
     },

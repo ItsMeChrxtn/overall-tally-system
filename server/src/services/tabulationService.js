@@ -264,6 +264,7 @@ export async function computeLiveCategoryTally(category) {
   // Special awards are presentation titles (not part of the locked snapshot), derived from the tally.
   const awards = effectiveAwards(category, config);
   tally.awards = computeSpecialAwards(tally, awards);
+  tally.awardees = category.awardees ?? 3;
   let dataHash = hashSheets(config.version, sheets.filter((s) => s.status === 'submitted'));
   // Changing the awards after a result is generated makes that result stale (only when awards exist, so older hashes stay valid)
   if (awards.length) dataHash = sha256(`${dataHash}|awards:${awards.map((a) => `${a.name}/${a.basis}/${a.criterionId ?? ''}`).join(';')}`);
@@ -410,6 +411,8 @@ async function staffIds(eventId, role) {
 }
 
 const TRANSITIONS = {
+  // Single-operator flow: the administrator finalizes a preliminary result directly (no "for approval" step).
+  finalize: { from: ['preliminary', 'for_approval'], to: 'approved', action: 'approved' },
   submit: { from: ['preliminary'], to: 'for_approval', action: 'submitted' },
   approve: { from: ['for_approval'], to: 'approved', action: 'approved' },
   return: { from: ['for_approval', 'approved'], to: 'returned', action: 'returned' },
@@ -427,17 +430,17 @@ export async function transitionResult(req, result, kind, note) {
   if (event.status === 'archived') throw ApiError.conflict('The event is archived.', 'EVENT_ARCHIVED');
 
   let category = null;
-  if (['submit', 'approve', 'publish'].includes(kind)) {
+  if (['finalize', 'submit', 'approve', 'publish'].includes(kind)) {
     category = await verifyResultIntegrity(result);
   } else if (result.category) {
     category = await Category.findById(result.category);
   }
 
-  if (kind === 'submit') {
+  if (kind === 'submit' || kind === 'finalize') {
     const latest = await TabulationResult.findOne({ event: result.event, category: result.category, scope: result.scope }).sort({ version: -1 });
-    if (String(latest._id) !== String(result._id)) throw ApiError.conflict('Only the latest result version can be submitted.');
+    if (String(latest._id) !== String(result._id)) throw ApiError.conflict('Only the latest result version can be finalized.');
     if (!result.complete && !event.settings?.allowIncompleteRanking) {
-      throw ApiError.badRequest('Official results cannot be submitted while score sheets are missing.', 'INCOMPLETE');
+      throw ApiError.badRequest('Results cannot be finalized while score sheets are missing.', 'INCOMPLETE');
     }
   }
   if ((kind === 'return' || kind === 'unpublish') && !note) throw ApiError.badRequest('A reason is required.');
@@ -447,6 +450,9 @@ export async function transitionResult(req, result, kind, note) {
   const now = new Date();
   if (kind === 'submit') Object.assign(result, { submittedBy: req.user._id, submittedAt: now, verificationNote: note });
   if (kind === 'approve') Object.assign(result, { approvedBy: req.user._id, approvedAt: now });
+  if (kind === 'finalize') {
+    Object.assign(result, { submittedBy: result.submittedBy || req.user._id, submittedAt: result.submittedAt || now, verificationNote: note || result.verificationNote, approvedBy: req.user._id, approvedAt: now });
+  }
   if (kind === 'return') Object.assign(result, { returnedBy: req.user._id, returnedAt: now, returnReason: note });
   if (kind === 'publish') Object.assign(result, { publishedBy: req.user._id, publishedAt: now });
   await result.save();
@@ -454,7 +460,7 @@ export async function transitionResult(req, result, kind, note) {
 
   // Side effects on category / event state
   if (category) {
-    if (kind === 'submit' && category.status === 'scoring') {
+    if ((kind === 'submit' || kind === 'finalize') && category.status === 'scoring') {
       category.status = 'closed';
       await category.save();
     }

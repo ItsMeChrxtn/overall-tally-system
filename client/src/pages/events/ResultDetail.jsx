@@ -13,13 +13,13 @@ import { AwardsPanel, CategoryTallyTable, MissingPanel, OverallTallyTable, TiesP
 
 const STEPS = [
   { key: 'preliminary', label: 'Preliminary' },
-  { key: 'for_approval', label: 'For approval' },
-  { key: 'approved', label: 'Approved' },
+  { key: 'approved', label: 'Final' },
   { key: 'published', label: 'Published' },
 ];
 
 function Stepper({ status }) {
-  const idx = STEPS.findIndex((s) => s.key === status);
+  // Older results may still be "for approval": show them as not yet final
+  const idx = STEPS.findIndex((s) => s.key === (status === 'for_approval' ? 'preliminary' : status));
   return (
     <ol className="flex flex-wrap items-center gap-2">
       {STEPS.map((s, i) => {
@@ -58,22 +58,23 @@ export default function ResultDetail() {
   const act = async (kind) => {
     let note;
     if (kind === 'return' || kind === 'unpublish') {
-      note = await promptReason({ title: kind === 'return' ? 'Return results for correction' : 'Unpublish results', text: 'Explain why. This is recorded in the approval history and audit trail.', confirmText: titleCase(kind) });
+      note = await promptReason({ title: kind === 'return' ? 'Reopen results for correction' : 'Unpublish results', text: 'Explain why. This is recorded in the approval history and audit trail.', confirmText: titleCase(kind) });
       if (!note) return;
     } else if (kind === 'submit') {
       note = await promptReason({ title: 'Submit for approval', text: 'Optional verification note for the approver (e.g. “Checked against printed judge sheets”).', confirmText: 'Submit for approval', required: false, minLength: 0, placeholder: 'Verification note (optional)' });
       if (note === null) return;
     } else {
       const texts = {
+        finalize: ['Finalize these results?', 'The system re-checks the tally against the current score sheets, then marks this version as FINAL. Scores in this category are locked until you reopen it for correction.'],
         approve: ['Approve these results?', 'The backend will re-verify the computation against current score sheets before approving.'],
-        publish: ['Publish to the public results page?', 'Anyone will be able to see the approved rankings.'],
+        publish: ['Publish to the public results page?', 'Anyone will be able to see the final rankings and awardees.'],
       };
-      if (!(await confirmAction({ title: texts[kind][0], text: texts[kind][1], confirmText: titleCase(kind) }))) return;
+      if (!(await confirmAction({ title: texts[kind][0], text: texts[kind][1], confirmText: kind === 'finalize' ? 'Finalize' : titleCase(kind) }))) return;
     }
     setBusy(kind);
     try {
       await api.post(`/results/${resultId}/${kind}`, note ? { note } : {});
-      toast.success({ submit: 'Submitted for approval', approve: 'Results approved', return: 'Returned for correction', publish: 'Results published', unpublish: 'Results unpublished' }[kind]);
+      toast.success({ finalize: 'Results finalized', submit: 'Submitted for approval', approve: 'Results approved', return: 'Reopened for correction', publish: 'Results published', unpublish: 'Results unpublished' }[kind]);
       await load();
       reloadEvent();
     } catch (err) {
@@ -101,7 +102,7 @@ export default function ResultDetail() {
   if (!data) return <PageSkeleton />;
   const { result, history, extras } = data;
   const isOverall = result.scope === 'overall';
-  const tally = { ...result, methodLabel: result.summary?.methodLabel, categories: isOverall ? result.criteria : undefined };
+  const tally = { ...result, awardees: result.category?.awardees ?? 3, methodLabel: result.summary?.methodLabel, categories: isOverall ? result.criteria : undefined };
   const s = result.status;
 
   return (
@@ -140,20 +141,15 @@ export default function ResultDetail() {
         </div>
         {event.status !== 'archived' && (
           <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3">
-            {s === 'preliminary' && can.tabulate && (
+            {['preliminary', 'for_approval'].includes(s) && can.approve && (
+              <Button size="sm" variant="success" icon={CircleCheckBig} loading={busy === 'finalize'} onClick={() => act('finalize')} disabled={!result.complete && !event.settings?.allowIncompleteRanking}>
+                Finalize results
+              </Button>
+            )}
+            {s === 'preliminary' && can.tabulate && !can.approve && (
               <Button size="sm" icon={Send} loading={busy === 'submit'} onClick={() => act('submit')} disabled={!result.complete && !event.settings?.allowIncompleteRanking}>
                 Submit for approval
               </Button>
-            )}
-            {s === 'for_approval' && can.approve && (
-              <>
-                <Button size="sm" variant="success" icon={CircleCheckBig} loading={busy === 'approve'} onClick={() => act('approve')}>
-                  Approve
-                </Button>
-                <Button size="sm" variant="secondary" icon={Undo2} loading={busy === 'return'} onClick={() => act('return')}>
-                  Return for correction
-                </Button>
-              </>
             )}
             {s === 'approved' && can.approve && (
               <>
@@ -161,7 +157,7 @@ export default function ResultDetail() {
                   Publish results
                 </Button>
                 <Button size="sm" variant="secondary" icon={Undo2} loading={busy === 'return'} onClick={() => act('return')}>
-                  Return for correction
+                  Reopen for correction
                 </Button>
               </>
             )}
@@ -171,11 +167,10 @@ export default function ResultDetail() {
               </Button>
             )}
             <span className="text-xs text-slate-500">
-              {s === 'preliminary' && (can.tabulate ? (result.complete ? 'Verify the tally, then submit it for approval.' : 'Incomplete versions cannot be submitted.') : 'Waiting for the tabulator to submit this version.')}
-              {s === 'for_approval' && (can.approve ? 'Review the tally and approve or return it.' : 'Waiting for administrator approval.')}
-              {s === 'approved' && (can.approve ? 'Approved results can now be published.' : 'Approved; waiting for publication.')}
+              {['preliminary', 'for_approval'].includes(s) && (result.complete || event.settings?.allowIncompleteRanking ? 'Check the tally, then finalize it.' : 'Incomplete versions cannot be finalized.')}
+              {s === 'approved' && 'Final. You can now download the reports or publish the results.'}
               {s === 'published' && `Public since ${formatDateTime(result.publishedAt)}.`}
-              {s === 'returned' && `Returned: ${result.returnReason}. Correct the scores and generate a new version.`}
+              {s === 'returned' && `Reopened: ${result.returnReason}. Correct the scores and generate a new version.`}
               {s === 'superseded' && 'A newer version replaced this one.'}
             </span>
             {user.role === 'super_admin' && s === 'published' && (
@@ -240,12 +235,12 @@ export default function ResultDetail() {
         </div>
 
         <Card className="h-fit">
-          <CardHeader title="Approval history" />
+          <CardHeader title="History" />
           <ol className="relative space-y-5 px-5 py-4">
             {history.map((h) => (
               <li key={h._id} className="relative pl-6">
                 <span className="absolute top-1.5 left-0 size-2.5 rounded-full bg-brand-500 ring-4 ring-brand-50" />
-                <p className="text-sm font-medium text-slate-800 capitalize">{h.action}</p>
+                <p className="text-sm font-medium text-slate-800 capitalize">{{ approved: 'Finalized', returned: 'Reopened for correction' }[h.action] || h.action}</p>
                 <p className="text-xs text-slate-500">
                   {h.byName} ({titleCase(h.byRole)}) · {formatDateTime(h.createdAt)}
                 </p>
@@ -255,8 +250,7 @@ export default function ResultDetail() {
           </ol>
           <div className="space-y-1 border-t border-slate-100 px-5 py-4 text-xs text-slate-500">
             <p>Prepared by: <span className="text-slate-700">{result.generatedBy?.name || '—'}</span></p>
-            <p>Verified by: <span className="text-slate-700">{result.submittedBy?.name || '—'}</span></p>
-            <p>Approved by: <span className="text-slate-700">{result.approvedBy?.name || '—'}</span></p>
+            <p>Finalized by: <span className="text-slate-700">{result.approvedBy?.name || '—'}</span></p>
             <p>Published by: <span className="text-slate-700">{result.publishedBy?.name || '—'}</span></p>
           </div>
         </Card>

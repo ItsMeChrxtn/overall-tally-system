@@ -37,7 +37,7 @@ export default function EventWorkspace() {
     { to: base, label: 'Overview', icon: Info, end: true },
     { to: `${base}/categories`, label: 'Categories & Criteria', icon: Layers, count: counts.categories },
     { to: `${base}/contestants`, label: 'Contestants', icon: UserRound, count: counts.contestants },
-    { to: `${base}/staff`, label: 'Judges & Staff', icon: Users, count: counts.judges },
+    { to: `${base}/staff`, label: 'Judges', icon: Users, count: counts.judges },
     ...(can.manage ? [{ to: `${base}/encode`, label: 'Encode Scores', icon: ClipboardPen }] : []),
     { to: `${base}/monitoring`, label: 'Monitoring', icon: MonitorCheck },
     { to: `${base}/tally`, label: 'Tally & Results', icon: BarChart3 },

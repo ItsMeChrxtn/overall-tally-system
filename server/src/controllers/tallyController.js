@@ -86,14 +86,14 @@ export const getResult = asyncHandler(async (req, res) => {
   const result = await TabulationResult.findById(req.params.id)
     .populate('generatedBy submittedBy approvedBy returnedBy publishedBy', 'name role')
     .populate('event', 'name eventDate venue settings')
-    .populate('category', 'name');
+    .populate('category', 'name awardees');
   if (!result) throw ApiError.notFound('Result not found.');
   const { can } = await requireEventAccess(req.user, result.event._id, 'review');
   const history = await ResultApproval.find({ result: result._id }).sort({ createdAt: 1 });
   res.json({ success: true, result, history, extras: await contestantExtras(result.event._id), can });
 });
 
-const CAPABILITY = { submit: 'tabulate', approve: 'approve', return: 'approve', publish: 'approve', unpublish: 'approve' };
+const CAPABILITY = { finalize: 'approve', submit: 'tabulate', approve: 'approve', return: 'approve', publish: 'approve', unpublish: 'approve' };
 
 export const transition = (kind) =>
   asyncHandler(async (req, res) => {

@@ -32,9 +32,9 @@ export const REPORT_TYPES = {
 };
 
 const STATUS_LABEL = {
-  preliminary: 'PRELIMINARY',
-  for_approval: 'FOR APPROVAL',
-  approved: 'APPROVED',
+  preliminary: 'PRELIMINARY — NOT YET FINAL',
+  for_approval: 'PRELIMINARY — NOT YET FINAL',
+  approved: 'FINAL RESULTS',
   returned: 'RETURNED FOR CORRECTION',
   published: 'OFFICIAL — PUBLISHED',
   superseded: 'SUPERSEDED',
@@ -52,12 +52,34 @@ function eventHeader(event) {
   };
 }
 
-function signatoriesFrom(result) {
+/** Signature block: the panel of judges (when known), then the person who prepared and certified the tally. */
+function signatoriesFrom(result, judges = []) {
   return [
-    { label: 'Prepared by', name: result?.generatedBy?.name || '', role: 'Tabulator' },
-    { label: 'Verified by', name: result?.submittedBy?.name || '', role: 'Tabulator' },
-    { label: 'Approved by', name: result?.approvedBy?.name || '', role: 'Event Administrator' },
+    ...judges.map((j, i) => ({ label: `Judge ${j.order || i + 1}`, name: j.name || '', role: 'Board of Judges' })),
+    { label: 'Prepared and certified by', name: result?.approvedBy?.name || result?.generatedBy?.name || '', role: 'Tabulation Committee' },
   ];
+}
+
+const ordinal = (n) => `${n}${[11, 12, 13].includes(n % 100) ? 'th' : { 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th'}`;
+/** Marks awardee rows (Top N, from the category's "number of awardees") so the renderers can highlight them. */
+const placeOf = (r, n = 3) => (r.rank >= 1 && r.rank <= n ? r.rank : undefined);
+const kindOf = (rank) => (rank <= 3 ? `place${rank}` : 'placeN');
+
+/** Winner cards shown above the tables: the Top N awardees plus any special awards. */
+function highlightsFrom(rows, awards, dp, n = 3) {
+  const podium = (rows || [])
+    .filter((r) => placeOf(r, n))
+    .map((r) => ({ kind: kindOf(r.rank), title: `${ordinal(r.rank)} Place${r.tied ? ' (tie)' : ''}`, name: `#${r.number} ${r.name}`, value: fmt(r.finalScore, dp) }));
+  const special = (awards || [])
+    .filter((a) => a.winners?.length)
+    .map((a) => ({
+      kind: 'award',
+      title: a.name + (a.tied ? ' (shared)' : ''),
+      name: a.winners.map((w) => `#${w.number} ${w.name}`).join(', '),
+      value: fmt(a.winners[0].value, dp),
+      sub: (a.basis === 'final' ? 'Highest final score' : `Highest in ${a.criterionName}`) + (a.note ? ` — ${a.note}` : ''),
+    }));
+  return [...podium, ...special];
 }
 
 /** Picks the result to report on: an explicit version, else the latest non-superseded one, else a live computation. */
@@ -130,11 +152,11 @@ async function tallyReport({ category, params }) {
     { key: 'number', label: 'No.', align: 'center', width: 6 },
     { key: 'name', label: 'Contestant', width: 26 },
     ...tally.judges.map((j, i) => ({ key: `j${i}`, label: j.name || `Judge ${i + 1}`, align: 'right', width: 12 })),
-    ...(usesCriteria ? tally.criteria.map((c, i) => ({ key: `c${i}`, label: `${c.name} (${c.weight}%) avg`, align: 'right', width: 13 })) : []),
+    ...(usesCriteria ? tally.criteria.map((c, i) => ({ key: `c${i}`, label: `${c.name}${c.weight ? ` (${c.weight}%)` : ""} avg`, align: 'right', width: 13 })) : []),
     { key: 'final', label: tally.scoringMethod === 'rank' || tally.customStrategy === 'rank_of_scores' ? 'Rank Sum' : 'Final Score', align: 'right', width: 12 },
   ];
   const rows = tally.rows.map((r) => {
-    const row = { rank: r.rank === null ? '—' : `${r.rank}${r.tied ? ' (tie)' : ''}`, number: r.number, name: r.name, final: fmt(r.finalScore, dp) };
+    const row = { rank: r.rank === null ? '—' : `${r.rank}${r.tied ? ' (tie)' : ''}`, number: r.number, name: r.name, final: fmt(r.finalScore, dp), _place: placeOf(r, category.awardees) };
     tally.judges.forEach((j, i) => {
       row[`j${i}`] = judgeScoreFor(r.judgeScores.find((x) => String(x.judgeId) === String(j.judgeId)), tally.scoringMethod, tally.customStrategy, dp);
     });
@@ -149,8 +171,6 @@ async function tallyReport({ category, params }) {
       rows,
     },
   ];
-  const awardsSection = specialAwardsSection(tally.awards, dp);
-  if (awardsSection) sections.push(awardsSection);
   if (tally.ties?.length) {
     sections.push({ heading: 'Tie-Breaking Decisions', columns: [{ key: 'note', label: 'Decision' }], rows: tally.ties.map((t) => ({ note: t.note })) });
   }
@@ -165,7 +185,7 @@ async function tallyReport({ category, params }) {
       rows: tally.missing.map((m) => ({ judge: m.judgeName, contestant: `#${m.contestantNumber} ${m.contestantName}`, reason: m.reason.replace('_', ' ') })),
     });
   }
-  return { statusLabel, sections, signatories: signatoriesFrom(result) };
+  return { statusLabel, highlights: highlightsFrom(tally.rows, tally.awards, dp, category.awardees), sections, signatories: signatoriesFrom(result, tally.judges) };
 }
 
 /** Tally sheet for a saved event-wide overall result. */
@@ -175,6 +195,7 @@ async function overallTallyReport({ result }) {
   const rankSum = String(result.scoringMethod).includes('rank');
   return {
     statusLabel: `${STATUS_LABEL[result.status]} · Version ${result.version}${result.complete ? '' : ' · INCOMPLETE'}`,
+    highlights: highlightsFrom(result.rows, [], dp),
     sections: [
       {
         heading: result.title,
@@ -187,7 +208,7 @@ async function overallTallyReport({ result }) {
           { key: 'final', label: rankSum ? 'Rank Sum' : 'Overall', align: 'right', width: 12 },
         ],
         rows: result.rows.map((r) => {
-          const row = { rank: r.rank === null ? '—' : `${r.rank}${r.tied ? ' (tie)' : ''}`, number: r.number, name: r.name, final: fmt(r.finalScore, dp) };
+          const row = { rank: r.rank === null ? '—' : `${r.rank}${r.tied ? ' (tie)' : ''}`, number: r.number, name: r.name, final: fmt(r.finalScore, dp), _place: placeOf(r) };
           cats.forEach((c, i) => {
             const s = r.categoryScores.find((x) => String(x.categoryId) === String(c.categoryId));
             row[`k${i}`] = !s?.participated ? '—' : rankSum ? String(s.rank ?? '—') : fmt(s.normalized, dp);
@@ -224,9 +245,11 @@ async function rankingReport({ category, params, event }) {
           name: r.name,
           representing: contestants.find((c) => String(c._id) === String(r.contestantId))?.representing || '',
           final: fmt(r.finalScore, dp),
+          _place: placeOf(r, category.awardees),
         })),
       },
     ],
+    highlights: highlightsFrom(tally.rows, tally.awards, dp, category.awardees),
     signatories: signatoriesFrom(result),
   };
 }
@@ -330,21 +353,17 @@ async function finalResultsReport({ event }) {
         { key: 'name', label: 'Contestant', width: 34 },
         { key: 'final', label: 'Final Score', align: 'right', width: 14 },
       ],
-      rows: r.rows.filter((x) => x.rank !== null).map((x) => ({ rank: `${x.rank}${x.tied ? ' (tie)' : ''}`, number: x.number, name: x.name, final: fmt(x.finalScore, r.decimalPlaces) })),
+      rows: r.rows.filter((x) => x.rank !== null).map((x) => ({ rank: `${x.rank}${x.tied ? ' (tie)' : ''}`, number: x.number, name: x.name, final: fmt(x.finalScore, r.decimalPlaces), _place: placeOf(x, categories.find((c) => String(c._id) === String(r.category))?.awardees ?? 3) })),
     });
     const awardsSection = specialAwardsSection(r.awards, r.decimalPlaces, `${r.title} — Special Awards`);
     if (awardsSection) sections.push(awardsSection);
   }
-  if (!sections.length) sections.push({ heading: 'No approved results yet', columns: [{ key: 'note', label: 'Note' }], rows: [{ note: 'Results appear here once they are approved.' }] });
+  if (!sections.length) sections.push({ heading: 'No final results yet', columns: [{ key: 'note', label: 'Note' }], rows: [{ note: 'Results appear here once they are finalized.' }] });
   const approver = parts.find((p) => p.approvedBy)?.approvedBy;
   return {
-    statusLabel: parts.every((p) => p.status === 'published') && parts.length ? 'OFFICIAL — PUBLISHED' : 'APPROVED RESULTS',
+    statusLabel: parts.every((p) => p.status === 'published') && parts.length ? 'OFFICIAL — PUBLISHED' : 'FINAL RESULTS',
     sections,
-    signatories: [
-      { label: 'Prepared by', name: parts[0]?.generatedBy?.name || '', role: 'Tabulator' },
-      { label: 'Verified by', name: parts[0]?.submittedBy?.name || '', role: 'Tabulator' },
-      { label: 'Approved by', name: approver?.name || '', role: 'Event Administrator' },
-    ],
+    signatories: [{ label: 'Prepared and certified by', name: approver?.name || parts[0]?.generatedBy?.name || '', role: 'Tabulation Committee' }],
   };
 }
 
@@ -517,6 +536,7 @@ export async function buildReport({ event, type, params, user }) {
       title: def.label,
       subtitle: result.title,
       organization: settings.organizationName || settings.systemName,
+      subheading: settings.reportSubheading || "",
       event: eventHeader(event),
       generatedAt: dt(new Date()),
       generatedBy: user.name,
@@ -536,6 +556,7 @@ export async function buildReport({ event, type, params, user }) {
     title: def.label,
     subtitle: category ? category.name : undefined,
     organization: settings.organizationName || settings.systemName,
+    subheading: settings.reportSubheading || "",
     event: eventHeader(event),
     category: category ? category.name : undefined,
     generatedAt: dt(new Date()),
@@ -545,66 +566,110 @@ export async function buildReport({ event, type, params, user }) {
   };
 }
 
-// ------------------------------------------------------------------ Excel renderer
+// ------------------------------------------------------------------ Excel renderer (formal, monochrome)
+const XL = { ink: 'FF111111', muted: 'FF555555', line: 'FFBBBBBB', head: 'FFEBEBEB' };
+
+/** Only a non-final result carries a status line; final and published reports show none. */
+const statusNote = (label = '') => (/PRELIMINARY|RETURNED|INCOMPLETE|LIVE COMPUTATION/.test(label) ? label : '');
+
+const solid = (argb) => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
+const thin = () => ({ top: { style: 'thin', color: { argb: XL.line } }, bottom: { style: 'thin', color: { argb: XL.line } }, left: { style: 'thin', color: { argb: XL.line } }, right: { style: 'thin', color: { argb: XL.line } } });
+
+/** Winners as a plain table: places first, then special awards. */
+function winnersSection(report) {
+  const list = report.highlights || [];
+  if (!list.length) return null;
+  const hasRemarks = list.some((h) => h.sub);
+  return {
+    heading: 'Winners',
+    columns: [
+      { key: 'title', label: 'Award', width: 24 },
+      { key: 'name', label: 'Awardee', width: 32 },
+      { key: 'value', label: 'Score', align: 'right', width: 10 },
+      ...(hasRemarks ? [{ key: 'sub', label: 'Basis', width: 30 }] : []),
+    ],
+    rows: list.map((h) => ({ title: h.title, name: h.name, value: h.value, sub: h.sub || '', _bold: h.kind === 'place1' })),
+  };
+}
+
 export async function reportToExcel(report) {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Overall Tally Management System';
   wb.created = new Date();
-  const ws = wb.addWorksheet(report.title.slice(0, 31), { pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
-  const maxCols = Math.max(4, ...report.sections.map((s) => (s.columns ? s.columns.length : 2)));
+  const ws = wb.addWorksheet(report.title.slice(0, 31), {
+    views: [{ showGridLines: false }],
+    pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9, horizontalCentered: true, margins: { left: 0.5, right: 0.5, top: 0.6, bottom: 0.6, header: 0.3, footer: 0.3 } },
+    headerFooter: { oddFooter: '&L&8&"Arial"Generated by the Overall Tally Management System&R&8&"Arial"Page &P of &N' },
+  });
+  const winners = winnersSection(report);
+  const sections = [...(winners ? [winners] : []), ...report.sections];
+  const maxCols = Math.max(4, ...sections.map((s) => (s.columns ? s.columns.length : 2)));
+  const font = (extra = {}) => ({ name: 'Arial', size: 10, color: { argb: XL.ink }, ...extra });
 
-  const addMerged = (text, font, height) => {
+  const merged = (text, f, { height, align = 'center' } = {}) => {
     const row = ws.addRow([text]);
     ws.mergeCells(row.number, 1, row.number, maxCols);
-    row.getCell(1).font = font;
-    row.getCell(1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    const cell = row.getCell(1);
+    cell.font = f;
+    cell.alignment = { horizontal: align, vertical: 'middle', wrapText: true };
     if (height) row.height = height;
     return row;
   };
 
-  if (report.organization) addMerged(report.organization, { size: 10, color: { argb: 'FF475569' } });
-  addMerged(report.event.name, { size: 16, bold: true }, 24);
-  addMerged(`${report.title}${report.subtitle ? ` — ${report.subtitle}` : ''}`, { size: 12, bold: true });
-  addMerged(`${report.event.date} · ${report.event.venue}`, { size: 10, color: { argb: 'FF475569' } });
-  addMerged(report.statusLabel || '', { size: 10, bold: true, color: { argb: 'FF1D4ED8' } });
+  // ---- letterhead
+  if (report.organization) merged(report.organization, font({ size: 13, bold: true }), { height: 20 });
+  if (report.subheading) merged(report.subheading, font({ size: 11, color: { argb: XL.muted } }), { height: 17 });
+  ws.addRow([]);
+  merged(report.event.name, font({ size: 15, bold: true }), { height: 22 });
+  const subtitle = report.subtitle && report.subtitle !== report.event.name ? ` — ${report.subtitle}` : '';
+  merged(`${report.title}${subtitle}`, font({ size: 11 }), { height: 17 });
+  const meta = [report.event.date, report.event.venue].filter((v) => v && v !== '—').join('   |   ');
+  if (meta) merged(meta, font({ size: 9, color: { argb: XL.muted } }));
+  const note = statusNote(report.statusLabel);
+  if (note) merged(note, font({ size: 9, bold: true, color: { argb: XL.muted } }));
+  const rule = merged('', font());
+  rule.height = 6;
+  rule.getCell(1).border = { bottom: { style: 'double', color: { argb: XL.ink } } };
   ws.addRow([]);
 
-  const widths = new Array(maxCols).fill(12);
-  for (const section of report.sections) {
-    const h = ws.addRow([section.heading]);
-    ws.mergeCells(h.number, 1, h.number, maxCols);
-    h.getCell(1).font = { bold: true, size: 12 };
-    if (section.note) {
-      const n = ws.addRow([section.note]);
-      ws.mergeCells(n.number, 1, n.number, maxCols);
-      n.getCell(1).font = { italic: true, size: 9, color: { argb: 'FF64748B' } };
-    }
+  // ---- sections
+  const widths = new Array(maxCols).fill(10);
+  for (const section of sections) {
+    merged(section.heading.toUpperCase(), font({ bold: true, size: 10 }), { align: 'left', height: 18 });
+    if (section.note) merged(section.note, font({ italic: true, size: 9, color: { argb: XL.muted } }), { align: 'left' });
     if (section.keyValues) {
       for (const [k, v] of section.keyValues) {
         const r = ws.addRow([k, v]);
-        r.getCell(1).font = { bold: true };
+        r.getCell(1).font = font({ bold: true });
+        r.getCell(2).font = font();
+        widths[0] = Math.max(widths[0], 24);
+        widths[1] = Math.max(widths[1], 30);
       }
     } else {
       const header = ws.addRow(section.columns.map((c) => c.label));
+      header.height = 30;
       header.eachCell((cell) => {
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
+        cell.font = font({ bold: true });
+        cell.fill = solid(XL.head);
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-        cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+        cell.border = thin();
       });
       section.columns.forEach((c, i) => (widths[i] = Math.max(widths[i], c.width || 12)));
       for (const row of section.rows) {
-        const r = ws.addRow(section.columns.map((c) => {
-          const v = row[c.key];
-          const num = typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : v;
-          return num ?? '';
-        }));
-        r.eachCell({ includeEmpty: true }, (cell, col) => {
-          const c = section.columns[col - 1];
-          if (!c) return;
+        const r = ws.addRow(
+          section.columns.map((c) => {
+            const v = row[c.key];
+            const num = typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : v;
+            return num ?? '';
+          })
+        );
+        section.columns.forEach((c, i) => {
+          const cell = r.getCell(i + 1);
           cell.alignment = { horizontal: c.align || 'left', vertical: 'middle', wrapText: true };
-          cell.border = { top: { style: 'hair' }, bottom: { style: 'hair' }, left: { style: 'hair' }, right: { style: 'hair' } };
-          if (row._bold) cell.font = { bold: true };
+          cell.border = thin();
+          cell.font = font({ bold: !!row._bold });
+          // keep the 2-decimal look of scores ("128.00", not "128")
+          if (typeof cell.value === 'number' && /\./.test(String(row[c.key]))) cell.numFmt = '0.00';
         });
       }
     }
@@ -612,20 +677,40 @@ export async function reportToExcel(report) {
   }
   widths.forEach((w, i) => (ws.getColumn(i + 1).width = w));
 
-  ws.addRow([]);
+  // ---- signatures (up to 3 per line, each spanning a block of columns)
   const sig = report.signatories || [];
   if (sig.length) {
-    const labels = ws.addRow(sig.flatMap((s) => [s.label, '']));
-    labels.font = { size: 9, color: { argb: 'FF64748B' } };
     ws.addRow([]);
-    const names = ws.addRow(sig.flatMap((s) => [s.name || '______________________', '']));
-    names.font = { bold: true };
-    ws.addRow(sig.flatMap((s) => [s.role, ''])).font = { size: 9, color: { argb: 'FF64748B' } };
+    const perLine = Math.min(3, sig.length);
+    const span = Math.max(1, Math.floor(maxCols / perLine));
+    for (let i = 0; i < sig.length; i += perLine) {
+      const group = sig.slice(i, i + perLine);
+      const labels = ws.addRow([]);
+      ws.addRow([]);
+      const names = ws.addRow([]);
+      const roles = ws.addRow([]);
+      names.height = 22;
+      group.forEach((s, k) => {
+        const from = k * span + 1;
+        const to = Math.min(maxCols, from + span - 1);
+        for (const [row, text, f, h] of [
+          [labels, s.label, font({ size: 9, color: { argb: XL.muted } }), 'left'],
+          [names, (s.name || '').toUpperCase(), font({ bold: true, size: 10 }), 'center'],
+          [roles, s.role || '', font({ size: 9, color: { argb: XL.muted } }), 'center'],
+        ]) {
+          if (to > from) ws.mergeCells(row.number, from, row.number, to);
+          const cell = row.getCell(from);
+          cell.value = text;
+          cell.font = f;
+          cell.alignment = { horizontal: h, vertical: 'bottom' };
+        }
+        for (let col = from; col <= to; col += 1) names.getCell(col).border = { bottom: { style: 'thin', color: { argb: XL.ink } } };
+      });
+      ws.addRow([]);
+    }
   }
   ws.addRow([]);
-  const foot = ws.addRow([`Generated ${report.generatedAt} by ${report.generatedBy}. ${report.footer || ''}`]);
-  ws.mergeCells(foot.number, 1, foot.number, maxCols);
-  foot.getCell(1).font = { size: 8, italic: true, color: { argb: 'FF94A3B8' } };
+  merged(`Generated ${report.generatedAt} by ${report.generatedBy}. ${report.footer || ''}`, font({ size: 8, italic: true, color: { argb: 'FF777777' } }), { align: 'left', height: 16 });
 
   return wb.xlsx.writeBuffer();
 }

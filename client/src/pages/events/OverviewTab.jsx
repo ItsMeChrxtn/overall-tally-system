@@ -141,7 +141,7 @@ export default function OverviewTab() {
           <div className="space-y-4 p-5">
             <Toggle disabled={!editable} checked={settings.allowMultiCategoryContestants} onChange={(v) => setSettings({ ...settings, allowMultiCategoryContestants: v })} label="Allow contestants in multiple categories" description="When off, each contestant may join only one category." />
             <Toggle disabled={!editable} checked={settings.judgesCanViewOwnSubmitted} onChange={(v) => setSettings({ ...settings, judgesCanViewOwnSubmitted: v })} label="Judges can view their own submitted scores" description="Judges never see other judges’ scores." />
-            <Toggle disabled={!editable} checked={settings.allowIncompleteRanking} onChange={(v) => setSettings({ ...settings, allowIncompleteRanking: v })} label="Allow official rankings with incomplete score sheets" description="Not recommended. When off, results cannot be submitted for approval until every sheet is in." />
+            <Toggle disabled={!editable} checked={settings.allowIncompleteRanking} onChange={(v) => setSettings({ ...settings, allowIncompleteRanking: v })} label="Allow official rankings with incomplete score sheets" description="Not recommended. When off, results cannot be finalized until every sheet is in." />
             <Toggle disabled={!editable} checked={settings.publicShowScores} onChange={(v) => setSettings({ ...settings, publicShowScores: v })} label="Show final scores on the public results page" description="When off, only rankings are shown publicly." />
           </div>
         </Card>

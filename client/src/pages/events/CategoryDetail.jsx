@@ -123,6 +123,7 @@ export default function CategoryDetail() {
   const [selContestants, setSelContestants] = useState([]);
   const [selJudges, setSelJudges] = useState([]);
   const [overall, setOverall] = useState({ includeInOverall: false, overallWeight: 0 });
+  const [awardees, setAwardees] = useState(3);
   const [critModal, setCritModal] = useState(null);
   const [critErrors, setCritErrors] = useState({});
   const [editOpen, setEditOpen] = useState(false);
@@ -145,6 +146,7 @@ export default function CategoryDetail() {
       setSelContestants(d.category.contestants.map(String));
       setSelJudges(d.judges.map((j) => String(j.userId)));
       setOverall({ includeInOverall: d.category.includeInOverall, overallWeight: d.category.overallWeight });
+      setAwardees(d.category.awardees ?? 3);
       setEventContestants(cons.data.items);
       setEventJudges(asg.data.items.filter((a) => a.role === 'judge'));
       setOtherCategories(cats.data.items.filter((c) => c._id !== categoryId));
@@ -556,6 +558,31 @@ export default function CategoryDetail() {
               </div>
             </Card>
           )}
+          <Card>
+            <CardHeader
+              title="Awardees"
+              description="How many places are announced as winners. Can be changed anytime; it does not affect the ranking."
+              actions={
+                editable &&
+                awardees !== (category.awardees ?? 3) && (
+                  <Button size="sm" icon={Save} loading={busy === 'awardees'} onClick={() => run('awardees', () => api.patch(`/categories/${categoryId}`, { awardees }), 'Awardees saved')}>
+                    Save
+                  </Button>
+                )
+              }
+            />
+            <div className="p-5">
+              <Field label="Number of awardees" hint={`Top ${awardees}: ranks 1–${awardees} are highlighted in the tally, reports and public results.`} className="max-w-xs">
+                <Select disabled={!editable} value={awardees} onChange={(e) => setAwardees(Number(e.target.value))}>
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>
+                      {n === 1 ? 'Top 1 (winner only)' : `Top ${n}`}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+          </Card>
           <Card>
             <CardHeader title="Configuration history" description="Snapshot written each time scoring opens." />
             {data.versions.length === 0 ? (

@@ -20,6 +20,7 @@ export default function SettingsPage() {
       const { data } = await api.put('/settings', {
         systemName: s.systemName.trim(),
         organizationName: s.organizationName,
+        reportSubheading: s.reportSubheading || '',
         publicResultsEnabled: s.publicResultsEnabled,
         defaultDecimalPlaces: Number(s.defaultDecimalPlaces),
         passwordMinLength: Number(s.passwordMinLength),
@@ -47,6 +48,9 @@ export default function SettingsPage() {
             </Field>
             <Field label="Organization name">
               <Input value={s.organizationName} onChange={(e) => setS({ ...s, organizationName: e.target.value })} />
+            </Field>
+            <Field label="Report subheading" hint="Second line on every report, e.g. SIT Week 2026." className="sm:col-span-2">
+              <Input value={s.reportSubheading || ''} onChange={(e) => setS({ ...s, reportSubheading: e.target.value })} placeholder="SIT Week 2026" />
             </Field>
             <Field label="Report footer" className="sm:col-span-2">
               <Input value={s.reportFooter} onChange={(e) => setS({ ...s, reportFooter: e.target.value })} />

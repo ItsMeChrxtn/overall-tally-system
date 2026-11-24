@@ -15,7 +15,7 @@ const EVENT = {
 const SHEET = { draft: 'amber', submitted: 'green', reopened: 'red', not_started: 'gray' };
 const RESULT = { preliminary: 'blue', for_approval: 'amber', approved: 'violet', returned: 'red', published: 'green', superseded: 'gray' };
 const CATEGORY = { setup: 'gray', scoring: 'violet', closed: 'blue' };
-const LABELS = { not_started: 'Not started', for_approval: 'For approval', for_verification: 'For verification', setup: 'Setup', scoring: 'Scoring open', closed: 'Scoring closed' };
+const LABELS = { approved: 'Final', returned: 'Reopened', not_started: 'Not started', for_approval: 'For approval', for_verification: 'For verification', setup: 'Setup', scoring: 'Scoring open', closed: 'Scoring closed' };
 
 export default function StatusBadge({ kind = 'event', status }) {
   if (!status) return <Badge>—</Badge>;

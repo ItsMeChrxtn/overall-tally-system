@@ -137,6 +137,7 @@ router.get('/events/:eventId/overall', authorize(...STAFF), tally.liveOverallTal
 router.post('/events/:eventId/overall/results', authorize(...STAFF), tally.generateOverallResult);
 router.get('/events/:eventId/results', authorize(...STAFF), tally.listEventResults);
 router.get('/results/:id', authorize(...STAFF), tally.getResult);
+router.post('/results/:id/finalize', authorize(...ADMINS), tally.transition('finalize'));
 router.post('/results/:id/submit', authorize(...STAFF), tally.transition('submit'));
 router.post('/results/:id/approve', authorize(...ADMINS), tally.transition('approve'));
 router.post('/results/:id/return', authorize(...ADMINS), tally.transition('return'));

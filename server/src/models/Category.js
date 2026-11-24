@@ -32,6 +32,8 @@ const categorySchema = new mongoose.Schema(
     instructions: { type: String, trim: true, maxlength: 2000 },
     tieBreakRules: { type: [tieRuleSchema], default: [{ type: 'highest_weight_criterion' }, { type: 'shared' }] },
     specialAwards: { type: [specialAwardSchema], default: [] },
+    // How many places are announced as winners (e.g. Top 3, Top 5). Display only: does not change the ranking.
+    awardees: { type: Number, min: 1, max: 20, default: 3 },
     contestants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Contestant' }],
     includeInOverall: { type: Boolean, default: false },
     overallWeight: { type: Number, min: 0, max: 100, default: 0 },

@@ -5,7 +5,9 @@ const settingSchema = new mongoose.Schema(
   {
     key: { type: String, default: 'global', unique: true },
     systemName: { type: String, default: 'Overall Tally', maxlength: 80 },
-    organizationName: { type: String, default: '', maxlength: 160 },
+    organizationName: { type: String, default: 'National University Mall of Asia - School of Information Technology', maxlength: 160 },
+    // Second header line on every report, e.g. the occasion: "SIT Week 2026"
+    reportSubheading: { type: String, default: 'SIT Week 2026', maxlength: 160 },
     publicResultsEnabled: { type: Boolean, default: true },
     defaultDecimalPlaces: { type: Number, min: 0, max: 4, default: 2 },
     passwordMinLength: { type: Number, min: 8, max: 64, default: 8 },

@@ -7,14 +7,14 @@ import { eventTypeLabel, formatDate, formatDateTime, num, ordinal } from '../../
 
 const PODIUM = ['from-amber-300 to-amber-500', 'from-slate-200 to-slate-400', 'from-orange-300 to-orange-500'];
 
-function Podium({ rows, showScores }) {
-  const top = rows.filter((r) => r.rank <= 3).slice(0, 3);
+function Podium({ rows, showScores, count = 3 }) {
+  const top = rows.filter((r) => r.rank <= count);
   if (!top.length) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       {top.map((r) => (
         <div key={r.number} className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-4 text-center">
-          <div className={cx('absolute inset-x-0 top-0 h-1 bg-gradient-to-r', PODIUM[r.rank - 1] || PODIUM[2])} />
+          <div className={cx('absolute inset-x-0 top-0 h-1 bg-gradient-to-r', PODIUM[r.rank - 1] || 'from-emerald-300 to-emerald-500')} />
           <div className="mx-auto mb-3 w-fit">
             <Avatar name={r.name} src={r.photo} size="xl" />
           </div>
@@ -103,7 +103,7 @@ export default function PublicResultsPage() {
                 {s.method && `${s.method} · `}Published {formatDateTime(s.publishedAt)}
               </p>
             </div>
-            <Podium rows={s.rows} showScores={showScores} />
+            <Podium rows={s.rows} showScores={showScores} count={s.awardees} />
             {s.awards?.length > 0 && (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {s.awards.map((a) => (

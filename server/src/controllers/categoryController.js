@@ -17,7 +17,7 @@ import { CUSTOM_STRATEGY_REGISTRY, methodLabel } from '../services/scoringEngine
 import { CUSTOM_STRATEGIES, ROLES, SCORING_METHODS, TIE_RULES } from '../constants/index.js';
 
 const SCORING_FIELDS = ['scoringMethod', 'customStrategy', 'decimalPlaces', 'tieBreakRules'];
-const GENERAL_FIELDS = ['name', 'description', 'instructions', 'order', 'includeInOverall', 'overallWeight'];
+const GENERAL_FIELDS = ['name', 'description', 'instructions', 'order', 'includeInOverall', 'overallWeight', 'awardees'];
 
 const tieRule = z.object({ type: z.enum(TIE_RULES), criterion: objectId.optional().nullable(), judge: objectId.optional().nullable() });
 const categoryBody = z.object({
@@ -31,6 +31,7 @@ const categoryBody = z.object({
   tieBreakRules: z.array(tieRule).max(10).optional(),
   includeInOverall: z.boolean().optional(),
   overallWeight: z.number().min(0, 'Weight cannot be negative').max(100).optional(),
+  awardees: z.number().int().min(1, 'At least 1 awardee').max(20, 'At most 20 awardees').optional(),
 });
 
 function normalizeRules(rules) {

@@ -4,7 +4,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { parse } from '../utils/validation.js';
 import { audit, diff } from '../services/auditService.js';
 
-const FIELDS = ['systemName', 'organizationName', 'publicResultsEnabled', 'defaultDecimalPlaces', 'passwordMinLength', 'reportFooter'];
+const FIELDS = ['systemName', 'organizationName', 'reportSubheading', 'publicResultsEnabled', 'defaultDecimalPlaces', 'passwordMinLength', 'reportFooter'];
 
 export const getSettings = asyncHandler(async (_req, res) => {
   res.json({ success: true, settings: await Setting.getGlobal() });
@@ -20,6 +20,7 @@ export const updateSettings = asyncHandler(async (req, res) => {
     z.object({
       systemName: z.string().trim().min(2).max(80).optional(),
       organizationName: z.string().trim().max(160).optional(),
+      reportSubheading: z.string().trim().max(160).optional(),
       publicResultsEnabled: z.boolean().optional(),
       defaultDecimalPlaces: z.number().int().min(0).max(4).optional(),
       passwordMinLength: z.number().int().min(8).max(64).optional(),

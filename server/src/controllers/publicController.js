@@ -30,7 +30,7 @@ export const publicEvent = asyncHandler(async (req, res) => {
   if (!results.length) throw ApiError.notFound('No published results for this event.');
   const event = await Event.findById(req.params.id, 'name description eventType venue eventDate startDate endDate coverImage status publishedAt organizer settings').lean();
   const showScores = event.settings?.publicShowScores !== false;
-  const categories = await Category.find({ event: event._id }, 'name order').lean();
+  const categories = await Category.find({ event: event._id }, 'name order awardees').lean();
   const contestants = await Contestant.find({ event: event._id }, 'photo representing teamName isTeam members').lean();
   const info = Object.fromEntries(contestants.map((c) => [String(c._id), c]));
 
@@ -43,6 +43,7 @@ export const publicEvent = asyncHandler(async (req, res) => {
         title: r.title,
         order: r.scope === 'overall' ? -1 : cat?.order ?? 0,
         method: r.summary?.methodLabel,
+        awardees: r.scope === 'overall' ? 3 : cat?.awardees ?? 3,
         publishedAt: r.publishedAt,
         rows: (r.rows || [])
           .filter((row) => row.rank !== null)

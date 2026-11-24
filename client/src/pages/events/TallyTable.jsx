@@ -15,10 +15,11 @@ function judgeCell(js, t, dp) {
   );
 }
 
-function RankCell({ row }) {
+function RankCell({ row, awardees = 3 }) {
   if (row.rank === null || row.rank === undefined) return <span className="text-slate-300">—</span>;
+  const tone = row.rank > awardees ? 'text-slate-700' : row.rank === 1 ? 'bg-amber-100 text-amber-800' : row.rank === 2 ? 'bg-slate-200 text-slate-800' : row.rank === 3 ? 'bg-orange-100 text-orange-800' : 'bg-emerald-100 text-emerald-800';
   return (
-    <span className={cx('inline-flex min-w-8 items-center justify-center rounded-md px-1.5 py-0.5 text-sm font-semibold tabular-nums', row.rank === 1 ? 'bg-amber-100 text-amber-800' : row.rank <= 3 ? 'bg-slate-100 text-slate-800' : 'text-slate-700')}>
+    <span className={cx('inline-flex min-w-8 items-center justify-center rounded-md px-1.5 py-0.5 text-sm font-semibold tabular-nums', tone)}>
       {row.rank}
       {row.tied && <span className="ml-1 text-[10px] font-medium text-amber-600">T</span>}
     </span>
@@ -65,7 +66,7 @@ export function CategoryTallyTable({ tally, extras = {}, mode = 'judges' }) {
           {tally.rows.map((r) => (
             <tr key={r.contestantId} className={cx(!r.complete && 'bg-amber-50/40')}>
               <td className="text-center">
-                <RankCell row={r} />
+                <RankCell row={r} awardees={tally.awardees} />
               </td>
               <td className="text-center text-slate-500 tabular-nums">{r.number}</td>
               <td>
