@@ -1,0 +1,28 @@
+import { Badge } from './ui';
+import { titleCase } from '../lib/format';
+
+const EVENT = {
+  draft: 'gray',
+  upcoming: 'blue',
+  active: 'brand',
+  scoring: 'violet',
+  for_verification: 'amber',
+  for_approval: 'amber',
+  published: 'green',
+  completed: 'green',
+  archived: 'gray',
+};
+const SHEET = { draft: 'amber', submitted: 'green', reopened: 'red', not_started: 'gray' };
+const RESULT = { preliminary: 'blue', for_approval: 'amber', approved: 'violet', returned: 'red', published: 'green', superseded: 'gray' };
+const CATEGORY = { setup: 'gray', scoring: 'violet', closed: 'blue' };
+const LABELS = { not_started: 'Not started', for_approval: 'For approval', for_verification: 'For verification', setup: 'Setup', scoring: 'Scoring open', closed: 'Scoring closed' };
+
+export default function StatusBadge({ kind = 'event', status }) {
+  if (!status) return <Badge>—</Badge>;
+  const map = { event: EVENT, sheet: SHEET, result: RESULT, category: CATEGORY }[kind] || EVENT;
+  return (
+    <Badge tone={map[status] || 'gray'} dot>
+      {LABELS[status] || titleCase(status)}
+    </Badge>
+  );
+}
