@@ -10,9 +10,9 @@ import ActivityFeed from '../../components/ActivityFeed';
 import { eventTypeLabel, formatDate, titleCase } from '../../lib/format';
 import { showError } from '../../lib/alerts';
 
-const STATUS_COLORS = { draft: "#cfcac0", upcoming: "#a29d92", active: "#4f9275", scoring: "#2f765a", for_verification: "#dcbc6b", for_approval: "#b8902f", published: "#1a4f3c", completed: "#123429", archived: "#e3e0d9" };
-const AXIS = { fontSize: 11, fill: "#77726a", fontFamily: "IBM Plex Mono, monospace" };
-const TOOLTIP = { borderRadius: 6, fontSize: 12, borderColor: "#e3e0d9", boxShadow: "none" };
+const STATUS_COLORS = { draft: "#d2d7e3", upcoming: "#8aa0ea", active: "#3359db", scoring: "#2447c7", for_verification: "#ffc72c", for_approval: "#f5b100", published: "#172a6b", completed: "#0f1d4f", archived: "#e5e8f0" };
+const AXIS = { fontSize: 11, fill: "#8790a8" };
+const TOOLTIP = { borderRadius: 12, fontSize: 12, borderColor: "#e5e8f0", boxShadow: "0 6px 16px -6px #0e163029" };
 
 function SubmissionsChart({ data }) {
   return (
@@ -23,15 +23,15 @@ function SubmissionsChart({ data }) {
           <AreaChart data={data} margin={{ left: -20, right: 12 }}>
             <defs>
               <linearGradient id="sub" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#1f6048" stopOpacity={0.16} />
-                <stop offset="100%" stopColor="#1f6048" stopOpacity={0} />
+                <stop offset="0%" stopColor="#2447c7" stopOpacity={0.22} />
+                <stop offset="100%" stopColor="#2447c7" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="#efede8" vertical={false} />
+            <CartesianGrid stroke="#edf0f7" vertical={false} />
             <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} tick={AXIS} axisLine={false} tickLine={false} />
             <YAxis allowDecimals={false} tick={AXIS} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={TOOLTIP} />
-            <Area type="monotone" dataKey="submissions" stroke="#1f6048" strokeWidth={1.75} fill="url(#sub)" />
+            <Area type="monotone" dataKey="submissions" stroke="#2447c7" strokeWidth={2.25} fill="url(#sub)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -124,13 +124,13 @@ function SuperAdminDashboard({ d }) {
             <div className="h-64 px-2 py-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={d.eventsByStatus.map((s) => ({ ...s, label: titleCase(s.status) }))} margin={{ left: -20, right: 12 }}>
-                  <CartesianGrid stroke="#efede8" vertical={false} />
+                  <CartesianGrid stroke="#edf0f7" vertical={false} />
                   <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals={false} tick={AXIS} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: "#f7f6f3" }} contentStyle={TOOLTIP} />
-                  <Bar dataKey="count" radius={[2, 2, 0, 0]} maxBarSize={40}>
+                  <Tooltip cursor={{ fill: "#f3f5fa" }} contentStyle={TOOLTIP} />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]} maxBarSize={40}>
                     {d.eventsByStatus.map((s) => (
-                      <Cell key={s.status} fill={STATUS_COLORS[s.status] || "#2f765a"} />
+                      <Cell key={s.status} fill={STATUS_COLORS[s.status] || "#2447c7"} />
                     ))}
                   </Bar>
                 </BarChart>

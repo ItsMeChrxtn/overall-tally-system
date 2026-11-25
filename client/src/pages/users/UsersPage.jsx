@@ -251,7 +251,7 @@ export default function UsersPage() {
               <>
                 <Field label="Temporary password" required error={errors.password} hint="Share it with the user through a secure channel.">
                   <div className="flex gap-2">
-                    <Input value={modal.password} onChange={(e) => setModal({ ...modal, password: e.target.value })} invalid={!!errors.password} className="font-mono" />
+                    <Input value={modal.password} onChange={(e) => setModal({ ...modal, password: e.target.value })} invalid={!!errors.password} className="" />
                     <Button variant="secondary" size="md" onClick={() => setModal({ ...modal, password: suggestPassword() })}>
                       New
                     </Button>

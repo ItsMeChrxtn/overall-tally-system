@@ -59,7 +59,7 @@ export default function NotificationBell() {
     <div className="relative" ref={ref}>
       <button type="button" onClick={() => setOpen((o) => !o)} className="relative inline-flex size-9 items-center justify-center rounded-md text-ink-500 hover:bg-ink-100 hover:text-ink-800" aria-label="Notifications">
         <Bell className="size-4.5" />
-        {unread > 0 && <span className="absolute top-1 right-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 font-mono text-[10px] font-semibold text-white">{unread > 9 ? '9+' : unread}</span>}
+        {unread > 0 && <span className="absolute top-1 right-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">{unread > 9 ? '9+' : unread}</span>}
       </button>
       {open && (
         <div className="absolute right-0 z-40 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-ink-200 bg-white shadow-lg">

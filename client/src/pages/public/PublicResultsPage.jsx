@@ -26,7 +26,7 @@ function Podium({ rows, showScores, count = 3 }) {
             <Avatar name={r.name} src={r.photo} size="lg" />
           </div>
           <p className="mt-4 font-semibold text-ink-900">
-            <span className="mr-1.5 font-mono text-sm font-normal text-ink-400">#{r.number}</span>
+            <span className="mr-1.5 text-sm font-normal text-ink-400">#{r.number}</span>
             {r.name}
           </p>
           {r.representing && <p className="text-[13px] text-ink-500">{r.representing}</p>}
@@ -100,7 +100,7 @@ export default function PublicResultsPage() {
           <section key={s._id}>
             <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-display text-2xl font-semibold text-ink-900">{s.title}</h2>
-              <p className="font-mono text-[11px] text-ink-500">
+              <p className="text-[11px] text-ink-500">
                 {s.method && `${s.method} · `}Published {formatDateTime(s.publishedAt)}
               </p>
             </div>

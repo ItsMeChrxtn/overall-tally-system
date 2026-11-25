@@ -52,15 +52,15 @@ const NAV = {
 function Sidebar({ user, onNavigate }) {
   const groups = NAV[user.role] || [];
   return (
-    <div className="flex h-full flex-col border-r border-ink-200 bg-ink-100/60">
-      <Link to="/app" onClick={onNavigate} className="flex h-14 items-center px-4">
-        <Logo sub="Scoring & tabulation" />
+    <div className="flex h-full flex-col bg-gradient-to-b from-navy-900 to-navy-950 shadow-[inset_-1px_0_0_#ffffff0d]">
+      <Link to="/app" onClick={onNavigate} className="flex h-[72px] items-center px-5">
+        <Logo inverted sub="NU MOA · Scoring & tabulation" />
       </Link>
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 pt-4 pb-5">
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3.5 pt-3 pb-5">
         {groups.map((g) => (
           <div key={g.section}>
-            <p className="label-caps mb-1.5 px-2.5">{g.section}</p>
-            <div className="space-y-px">
+            <p className="mb-1.5 px-3 text-[10.5px] font-semibold tracking-[0.12em] text-[#7f8cba] uppercase">{g.section}</p>
+            <div className="space-y-1">
               {g.items.map(({ to, label, icon: Icon, end }) => (
                 <NavLink
                   key={to}
@@ -69,12 +69,12 @@ function Sidebar({ user, onNavigate }) {
                   onClick={onNavigate}
                   className={({ isActive }) =>
                     cx(
-                      'relative flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-sm transition-colors',
-                      isActive ? 'bg-white font-medium text-ink-900 shadow-sm ring-1 ring-ink-200 before:absolute before:inset-y-2 before:-left-3 before:w-[3px] before:rounded-r-sm before:bg-brand-600' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+                      'flex min-h-11 items-center gap-3 rounded-[10px] px-3.5 text-sm font-medium transition-all',
+                      isActive ? 'bg-gradient-to-r from-white/[0.12] to-white/[0.04] text-white shadow-[inset_3px_0_0_#f5b100]' : 'text-[#c3cbe8] hover:translate-x-0.5 hover:bg-white/[0.06] hover:text-white'
                     )
                   }
                 >
-                  <Icon className="size-4 text-current opacity-80" strokeWidth={1.75} />
+                  <Icon className="size-[18px]" strokeWidth={1.9} />
                   {label}
                 </NavLink>
               ))}
@@ -82,10 +82,10 @@ function Sidebar({ user, onNavigate }) {
           </div>
         ))}
       </nav>
-      <div className="border-t border-ink-200 p-3">
-        <Link to="/" target="_blank" className="flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-sm text-ink-600 hover:bg-ink-100 hover:text-ink-900">
-          <Globe className="size-4" strokeWidth={1.75} /> Public results
-          <span className="ml-auto text-[11px] text-ink-400">↗</span>
+      <div className="border-t border-white/10 p-3.5">
+        <Link to="/" target="_blank" className="flex min-h-11 items-center gap-3 rounded-[10px] px-3.5 text-sm font-medium text-[#c3cbe8] hover:bg-white/[0.06] hover:text-white">
+          <Globe className="size-[18px]" /> Public results
+          <span className="ml-auto text-[11px] text-[#7f8cba]">↗</span>
         </Link>
       </div>
     </div>
@@ -102,7 +102,7 @@ function UserMenu({ user, onLogout }) {
   }, []);
   return (
     <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center gap-2.5 rounded-md py-1 pr-2 pl-1 hover:bg-ink-100">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="flex h-11 items-center gap-2.5 rounded-xl pr-2.5 pl-1.5 transition-colors hover:bg-ink-100">
         <Avatar name={user.name} size="sm" />
         <span className="hidden text-left leading-tight sm:block">
           <span className="block text-sm font-medium text-ink-800">{user.name}</span>
@@ -111,7 +111,7 @@ function UserMenu({ user, onLogout }) {
         <ChevronDown className="hidden size-4 text-ink-400 sm:block" />
       </button>
       {open && (
-        <div className="absolute right-0 z-40 mt-1.5 w-56 overflow-hidden rounded-lg border border-ink-200 bg-white py-1 shadow-lg">
+        <div className="absolute right-0 z-40 mt-2 w-60 overflow-hidden rounded-xl border border-ink-200 bg-white py-1 shadow-xl">
           <div className="border-b border-ink-100 px-4 py-2.5">
             <p className="truncate text-sm font-medium text-ink-800">{user.name}</p>
             <p className="truncate text-xs text-ink-500">{user.email}</p>
@@ -145,12 +145,12 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] lg:block">
         <Sidebar user={user} />
       </aside>
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-ink-950/40" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <div className="relative h-full w-72 max-w-[85vw]">
             <Sidebar user={user} onNavigate={() => setMobileOpen(false)} />
             <button type="button" onClick={() => setMobileOpen(false)} className="absolute top-4 -right-11 inline-flex size-9 items-center justify-center rounded-md bg-white text-ink-700" aria-label="Close menu">
@@ -159,18 +159,21 @@ export default function AppLayout() {
           </div>
         </div>
       )}
-      <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-ink-200 bg-ink-50/95 px-4 backdrop-blur-sm sm:px-6">
+      <div className="lg:pl-[260px]">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-ink-200 bg-white/85 px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
           <button type="button" onClick={() => setMobileOpen(true)} className="inline-flex size-9 items-center justify-center rounded-md text-ink-600 hover:bg-ink-100 lg:hidden" aria-label="Open menu">
             <Menu className="size-5" />
           </button>
-          <p className="hidden font-mono text-xs text-ink-500 md:block">{new Date().toLocaleDateString('en-PH', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          <p className="hidden h-10 items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-3.5 text-[13px] font-medium text-ink-600 md:inline-flex">
+            <span className="size-2 rounded-full bg-gold-500" />
+            {new Date().toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
           <div className="ml-auto flex items-center gap-1.5">
             <NotificationBell />
             <UserMenu user={user} onLogout={handleLogout} />
           </div>
         </header>
-        <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+        <main className="mx-auto max-w-[1440px] px-4 py-7 sm:px-6 lg:px-8">
           <ErrorBoundary resetKey={location.pathname}>
             <Outlet />
           </ErrorBoundary>
