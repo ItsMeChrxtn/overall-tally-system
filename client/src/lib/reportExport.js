@@ -14,14 +14,17 @@ export function exportExcel(eventId, type, params = {}) {
 
 const safeName = (s) => s.replace(/[^\w\- ]+/g, '').replace(/\s+/g, '_').slice(0, 100);
 
-// ------------------------------------------------------------------ shared look (formal, monochrome)
+// ------------------------------------------------------------------ shared look (formal, NU navy + gold accents)
 const C = {
   ink: [17, 17, 17],
   text: [33, 33, 33],
-  muted: [90, 90, 90],
-  rule: [120, 120, 120],
-  line: [190, 190, 190],
-  head: [235, 235, 235],
+  muted: [90, 96, 112],
+  navy: [15, 29, 79],
+  blue: [36, 71, 199],
+  gold: [245, 177, 0],
+  goldSoft: [255, 245, 217],
+  line: [205, 210, 222],
+  zebra: [245, 247, 251],
 };
 
 /** Only a non-final result carries a status line; final and published reports show none. */
@@ -75,28 +78,31 @@ export function reportToPdf(report) {
   };
 
   // ---- letterhead
-  if (report.organization) line(report.organization, { size: 12, bold: true, gap: 15 });
+  if (report.organization) line(report.organization, { size: 12, bold: true, color: C.navy, gap: 15 });
   if (report.subheading) line(report.subheading, { size: 10, color: C.muted, gap: 20 });
-  line(report.event.name, { size: 15, bold: true, gap: 17 });
+  line(report.event.name, { size: 15, bold: true, color: C.navy, gap: 17 });
   line(`${report.title}${report.subtitle && report.subtitle !== report.event.name ? ` — ${report.subtitle}` : ''}`, { size: 11, gap: 14 });
   const meta = [report.event.date, report.event.venue].filter((v) => v && v !== '—').join('   |   ');
   if (meta) line(meta, { size: 9, color: C.muted, gap: 12 });
   const note = statusNote(report.statusLabel);
   if (note) line(note, { size: 8.5, bold: true, color: C.muted, gap: 12 });
   y += 2;
-  doc.setDrawColor(...C.ink);
-  doc.setLineWidth(1.2);
+  doc.setDrawColor(...C.navy);
+  doc.setLineWidth(1.4);
   doc.line(margin, y, pageW - margin, y);
-  doc.setLineWidth(0.4);
+  doc.setDrawColor(...C.gold);
+  doc.setLineWidth(1);
   doc.line(margin, y + 3, pageW - margin, y + 3);
   y += 26;
 
   const heading = (text) => {
     ensure(60);
+    doc.setFillColor(...C.gold);
+    doc.rect(margin, y - 8, 3, 10, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    doc.setTextColor(...C.ink);
-    doc.text(text.toUpperCase(), margin, y, { charSpace: 0.3 });
+    doc.setTextColor(...C.navy);
+    doc.text(text.toUpperCase(), margin + 8, y, { charSpace: 0.3 });
     y += 6;
   };
 
@@ -119,12 +125,16 @@ export function reportToPdf(report) {
       theme: isKV ? 'plain' : 'grid',
       showHead: 'everyPage',
       styles: { font: 'helvetica', fontSize: 8.5, cellPadding: { top: 4.5, bottom: 4.5, left: 6, right: 6 }, lineColor: C.line, lineWidth: 0.5, textColor: C.text, valign: 'middle' },
-      headStyles: { fillColor: C.head, textColor: C.ink, fontStyle: 'bold', halign: 'center', lineColor: C.line },
+      headStyles: { fillColor: C.navy, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', lineColor: C.navy },
+      alternateRowStyles: isKV ? undefined : { fillColor: C.zebra },
       columnStyles: isKV ? { 0: { fontStyle: 'bold', cellWidth: 150 } } : Object.fromEntries(section.columns.map((c, i) => [i, { halign: c.align || 'left' }])),
       didParseCell: (data) => {
         if (isKV || data.section !== 'body') return;
         const row = section.rows[data.row.index];
-        if (row?._bold) data.cell.styles.fontStyle = 'bold';
+        if (row?._bold) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = C.goldSoft;
+        }
       },
     });
     y = doc.lastAutoTable.finalY + 24;
@@ -134,8 +144,8 @@ export function reportToPdf(report) {
   if (winners) table(winners);
   for (const section of report.sections) table(section);
 
-  // ---- signatures
-  const sig = report.signatories || [];
+  // ---- signatures (the Tabulation Committee sign-off is left off the PDF)
+  const sig = (report.signatories || []).filter((s) => s.role !== 'Tabulation Committee');
   if (sig.length) {
     const perRow = Math.min(3, sig.length);
     const colW = contentW / perRow;
@@ -155,9 +165,9 @@ export function reportToPdf(report) {
       doc.text(s.label, x, y);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
-      doc.setTextColor(...C.ink);
+      doc.setTextColor(...C.navy);
       doc.text((s.name || ' ').toUpperCase(), x + w / 2, y + 30, { align: 'center', maxWidth: w });
-      doc.setDrawColor(...C.ink);
+      doc.setDrawColor(...C.navy);
       doc.setLineWidth(0.6);
       doc.line(x, y + 34, x + w, y + 34);
       doc.setFont('helvetica', 'normal');
@@ -171,6 +181,11 @@ export function reportToPdf(report) {
   const pages = doc.getNumberOfPages();
   for (let p = 1; p <= pages; p += 1) {
     doc.setPage(p);
+    // thin navy + gold band across the top of every page
+    doc.setFillColor(...C.navy);
+    doc.rect(0, 0, pageW, 6, 'F');
+    doc.setFillColor(...C.gold);
+    doc.rect(0, 6, pageW, 2, 'F');
     doc.setDrawColor(...C.line);
     doc.setLineWidth(0.5);
     doc.line(margin, pageH - 32, pageW - margin, pageH - 32);
@@ -212,31 +227,32 @@ export function reportToHtml(report) {
 <style>
   @page { size: A4 ${isWide(report) ? 'landscape' : 'portrait'}; margin: 14mm; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 11px; margin: 0; padding: 28px 32px; }
-  header { text-align: center; padding-bottom: 10px; margin-bottom: 22px; border-bottom: 3px double #111; }
-  header .org { font-size: 14px; font-weight: 700; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 11px; margin: 0; padding: 28px 32px; border-top: 6px solid #0f1d4f; box-shadow: inset 0 2px 0 #f5b100; }
+  header { text-align: center; padding-bottom: 10px; margin-bottom: 22px; border-bottom: 2px solid #0f1d4f; box-shadow: 0 3px 0 -1px #f5b100; }
+  header .org { font-size: 14px; font-weight: 700; color: #0f1d4f; }
   header .sub { color: #555; font-size: 12px; margin-top: 2px; }
-  header h1 { font-size: 18px; margin: 14px 0 2px; }
+  header h1 { font-size: 18px; margin: 14px 0 2px; color: #0f1d4f; }
   header h3 { font-size: 13px; font-weight: 400; margin: 0; }
   header .meta { color: #555; margin-top: 4px; }
   header .status { color: #555; font-weight: 700; font-size: 10px; margin-top: 6px; letter-spacing: .04em; }
   section { margin-bottom: 22px; }
-  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px; color: #0f1d4f; border-left: 3px solid #f5b100; padding-left: 6px; }
   .note { color: #555; font-style: italic; margin: 0 0 6px; }
   table { width: 100%; border-collapse: collapse; }
-  th, td { border: 1px solid #bbb; padding: 5px 7px; font-variant-numeric: tabular-nums; }
-  thead th { background: #ebebeb; font-weight: 700; }
+  th, td { border: 1px solid #cdd2de; padding: 5px 7px; font-variant-numeric: tabular-nums; }
+  thead th { background: #0f1d4f; border-color: #0f1d4f; color: #fff; font-weight: 700; }
   thead { display: table-header-group; }
-  tr.b td { font-weight: 700; }
+  tbody tr:nth-child(even) td { background: #f5f7fb; }
+  tr.b td { font-weight: 700; background: #fff5d9 !important; }
   table.kv th { text-align: left; width: 30%; }
   .sigs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px 40px; margin-top: 48px; break-inside: avoid; }
   .sig span { color: #555; font-size: 10px; display: block; }
-  .sig strong { display: block; margin-top: 28px; border-bottom: 1px solid #111; padding-bottom: 3px; min-height: 20px; font-size: 12px; text-align: center; text-transform: uppercase; }
+  .sig strong { display: block; margin-top: 28px; color: #0f1d4f; border-bottom: 1px solid #0f1d4f; padding-bottom: 3px; min-height: 20px; font-size: 12px; text-align: center; text-transform: uppercase; }
   .sig em { display: block; color: #555; font-size: 10px; font-style: normal; text-align: center; margin-top: 2px; }
-  footer { margin-top: 32px; padding-top: 8px; border-top: 1px solid #bbb; color: #777; font-size: 9px; }
+  footer { margin-top: 32px; padding-top: 8px; border-top: 1px solid #cdd2de; color: #777; font-size: 9px; }
   .toolbar { position: sticky; top: 0; text-align: right; margin: -28px -32px 18px; padding: 10px 32px; background: #f5f5f5; border-bottom: 1px solid #ddd; }
-  .toolbar button { font: inherit; padding: 6px 14px; border-radius: 4px; border: 1px solid #333; background: #222; color: #fff; cursor: pointer; }
-  @media print { .toolbar { display: none; } body { padding: 0; } }
+  .toolbar button { font: inherit; padding: 6px 14px; border-radius: 6px; border: 0; background: #2447c7; color: #fff; cursor: pointer; }
+  @media print { .toolbar { display: none; } body { padding: 0; border-top: 0; box-shadow: none; } }
 </style></head><body>
 <div class="toolbar"><button onclick="window.print()">Print</button></div>
 <header>${report.organization ? `<div class="org">${esc(report.organization)}</div>` : ''}${report.subheading ? `<div class="sub">${esc(report.subheading)}</div>` : ''}<h1>${esc(report.event.name)}</h1><h3>${esc(report.title)}${subtitle}</h3>${meta ? `<div class="meta">${meta}</div>` : ''}${note ? `<div class="status">${esc(note)}</div>` : ''}</header>

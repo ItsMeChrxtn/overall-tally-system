@@ -166,11 +166,13 @@ export default function ReportsTab() {
         </Card>
 
         {preview && (
-          <Card>
-            <div className="border-b-4 border-double border-ink-800 px-5 py-5 text-center">
-              {preview.organization && <p className="text-sm font-bold text-ink-900">{preview.organization}</p>}
+          <Card className="overflow-hidden">
+            <div className="h-1.5 bg-navy-900" />
+            <div className="h-0.5 bg-gold-500" />
+            <div className="mx-5 border-b-2 border-navy-900 px-0 py-5 text-center shadow-[0_3px_0_-1px_#f5b100]">
+              {preview.organization && <p className="text-sm font-bold text-navy-900">{preview.organization}</p>}
               {preview.subheading && <p className="text-xs text-ink-600">{preview.subheading}</p>}
-              <p className="mt-3 text-base font-bold text-ink-900">{preview.event.name}</p>
+              <p className="mt-3 text-base font-bold text-navy-900">{preview.event.name}</p>
               <p className="text-sm text-ink-800">
                 {preview.title}
                 {preview.subtitle && preview.subtitle !== preview.event.name && ` — ${preview.subtitle}`}
@@ -181,7 +183,7 @@ export default function ReportsTab() {
             <div className="space-y-6 p-5">
               {[winnersTable(preview), ...preview.sections].filter(Boolean).map((s, i) => (
                 <div key={i}>
-                  <p className="text-xs font-bold tracking-wide text-ink-900 uppercase">{s.heading}</p>
+                  <p className="border-l-[3px] border-gold-500 pl-1.5 text-xs font-bold tracking-wide text-navy-900 uppercase">{s.heading}</p>
                   {s.note && <p className="mb-2 text-xs text-ink-500 italic">{s.note}</p>}
                   <div className="mt-2 overflow-x-auto rounded-lg border border-ink-200">
                     {s.keyValues ? (
@@ -200,7 +202,7 @@ export default function ReportsTab() {
                         <thead>
                           <tr>
                             {s.columns.map((c) => (
-                              <th key={c.key} className={c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : ''}>
+                              <th key={c.key} className={cx('!border-navy-900 !bg-navy-900 !text-white', c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : '')}>
                                 {c.label}
                               </th>
                             ))}
@@ -208,7 +210,7 @@ export default function ReportsTab() {
                         </thead>
                         <tbody>
                           {s.rows.map((r, k) => (
-                            <tr key={k} className={cx(r._bold && 'font-semibold')}>
+                            <tr key={k} className={cx(r._bold ? 'bg-gold-50 font-semibold' : k % 2 === 1 && 'bg-ink-50')}>
                               {s.columns.map((c) => (
                                 <td key={c.key} className={cx('tabular-nums', c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : '')}>
                                   {r[c.key]}
