@@ -86,11 +86,11 @@ export default function ReportsTab() {
         <ul className="p-2">
           {types.map((t) => (
             <li key={t.key}>
-              <button type="button" onClick={() => setType(t.key)} className={cx('flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors', type === t.key ? 'bg-brand-50' : 'hover:bg-slate-50')}>
-                <t.icon className={cx('mt-0.5 size-4 shrink-0', type === t.key ? 'text-brand-600' : 'text-slate-400')} />
+              <button type="button" onClick={() => setType(t.key)} className={cx('flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors', type === t.key ? 'bg-brand-50' : 'hover:bg-ink-50')}>
+                <t.icon className={cx('mt-0.5 size-4 shrink-0', type === t.key ? 'text-brand-600' : 'text-ink-400')} />
                 <span>
-                  <span className={cx('block text-sm font-medium', type === t.key ? 'text-brand-700' : 'text-slate-800')}>{t.label}</span>
-                  <span className="block text-xs text-slate-500">{t.desc}</span>
+                  <span className={cx('block text-sm font-medium', type === t.key ? 'text-brand-700' : 'text-ink-800')}>{t.label}</span>
+                  <span className="block text-xs text-ink-500">{t.desc}</span>
                 </span>
               </button>
             </li>
@@ -147,9 +147,9 @@ export default function ReportsTab() {
                 </Field>
               </>
             )}
-            {needsCategory && <p className="text-xs text-slate-500 sm:col-span-2 lg:col-span-3">Uses the latest saved result version for the category; if none exists, a live preliminary computation is shown and clearly labelled.</p>}
+            {needsCategory && <p className="text-xs text-ink-500 sm:col-span-2 lg:col-span-3">Uses the latest saved result version for the category; if none exists, a live preliminary computation is shown and clearly labelled.</p>}
           </div>
-          <div className="flex flex-wrap gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3">
+          <div className="flex flex-wrap gap-2 border-t border-ink-100 bg-ink-50/60 px-5 py-3">
             <Button icon={FileText} loading={busy === 'pdf'} onClick={() => run('pdf')} disabled={needsCategory && !category}>
               Download PDF
             </Button>
@@ -167,29 +167,29 @@ export default function ReportsTab() {
 
         {preview && (
           <Card>
-            <div className="border-b-4 border-double border-slate-800 px-5 py-5 text-center">
-              {preview.organization && <p className="text-sm font-bold text-slate-900">{preview.organization}</p>}
-              {preview.subheading && <p className="text-xs text-slate-600">{preview.subheading}</p>}
-              <p className="mt-3 text-base font-bold text-slate-900">{preview.event.name}</p>
-              <p className="text-sm text-slate-800">
+            <div className="border-b-4 border-double border-ink-800 px-5 py-5 text-center">
+              {preview.organization && <p className="text-sm font-bold text-ink-900">{preview.organization}</p>}
+              {preview.subheading && <p className="text-xs text-ink-600">{preview.subheading}</p>}
+              <p className="mt-3 text-base font-bold text-ink-900">{preview.event.name}</p>
+              <p className="text-sm text-ink-800">
                 {preview.title}
                 {preview.subtitle && preview.subtitle !== preview.event.name && ` — ${preview.subtitle}`}
               </p>
-              <p className="text-xs text-slate-500">{[preview.event.date, preview.event.venue].filter((v) => v && v !== '—').join('  |  ')}</p>
-              {statusNote(preview.statusLabel) && <p className="mt-1 text-xs font-bold tracking-wide text-slate-500">{statusNote(preview.statusLabel)}</p>}
+              <p className="text-xs text-ink-500">{[preview.event.date, preview.event.venue].filter((v) => v && v !== '—').join('  |  ')}</p>
+              {statusNote(preview.statusLabel) && <p className="mt-1 text-xs font-bold tracking-wide text-ink-500">{statusNote(preview.statusLabel)}</p>}
             </div>
             <div className="space-y-6 p-5">
               {[winnersTable(preview), ...preview.sections].filter(Boolean).map((s, i) => (
                 <div key={i}>
-                  <p className="text-xs font-bold tracking-wide text-slate-900 uppercase">{s.heading}</p>
-                  {s.note && <p className="mb-2 text-xs text-slate-500 italic">{s.note}</p>}
-                  <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200">
+                  <p className="text-xs font-bold tracking-wide text-ink-900 uppercase">{s.heading}</p>
+                  {s.note && <p className="mb-2 text-xs text-ink-500 italic">{s.note}</p>}
+                  <div className="mt-2 overflow-x-auto rounded-lg border border-ink-200">
                     {s.keyValues ? (
                       <table className="table-base">
                         <tbody>
                           {s.keyValues.map(([k, v]) => (
                             <tr key={k}>
-                              <td className="w-48 font-medium text-slate-600">{k}</td>
+                              <td className="w-48 font-medium text-ink-600">{k}</td>
                               <td>{v}</td>
                             </tr>
                           ))}
@@ -226,9 +226,9 @@ export default function ReportsTab() {
                 <div className="grid gap-6 pt-6 sm:grid-cols-3">
                   {preview.signatories.map((s, i) => (
                     <div key={i}>
-                      <p className="text-xs text-slate-500">{s.label}</p>
-                      <p className="mt-6 border-b border-slate-400 pb-1 text-sm font-semibold">{s.name || ' '}</p>
-                      <p className="text-xs text-slate-500">{s.role}</p>
+                      <p className="text-xs text-ink-500">{s.label}</p>
+                      <p className="mt-6 border-b border-ink-400 pb-1 text-sm font-semibold">{s.name || ' '}</p>
+                      <p className="text-xs text-ink-500">{s.role}</p>
                     </div>
                   ))}
                 </div>

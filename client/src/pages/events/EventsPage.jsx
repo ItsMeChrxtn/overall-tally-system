@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CalendarDays, CalendarPlus, Gavel, Layers, MapPin, UserRound } from 'lucide-react';
+import { CalendarDays, CalendarPlus, MapPin } from 'lucide-react';
 import api, { fileUrl } from '../../api/client';
 import { useAuth, isAdmin } from '../../auth/AuthContext';
 import { Button, Card, EmptyState, Modal, PageHeader, ProgressBar, SearchInput, Select, Skeleton } from '../../components/ui';
@@ -98,7 +98,7 @@ export default function EventsPage() {
       {items === null ? (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-60 rounded-xl" />
+            <Skeleton key={i} className="h-52" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -113,17 +113,19 @@ export default function EventsPage() {
       ) : (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((e) => (
-            <Link key={e._id} to={`/app/events/${e._id}${user.role === 'tabulator' ? '/tally' : ''}`} className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md">
-              <div className="relative h-24 bg-gradient-to-br from-slate-800 to-brand-800">
-                {e.coverImage && <img src={fileUrl(e.coverImage)} alt="" className="absolute inset-0 size-full object-cover opacity-80" />}
-                <div className="absolute top-3 right-3">
+            <Link key={e._id} to={`/app/events/${e._id}${user.role === 'tabulator' ? '/tally' : ''}`} className="group flex flex-col overflow-hidden rounded-lg border border-ink-200 bg-white transition hover:border-ink-400">
+              {e.coverImage && (
+                <div className="relative h-24 border-b border-ink-200">
+                  <img src={fileUrl(e.coverImage)} alt="" className="absolute inset-0 size-full object-cover" />
+                </div>
+              )}
+              <div className="flex flex-1 flex-col p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs text-ink-500">{eventTypeLabel(e.eventType)}</p>
                   <StatusBadge status={e.status} />
                 </div>
-              </div>
-              <div className="flex flex-1 flex-col p-4">
-                <p className="text-xs font-medium text-brand-600">{eventTypeLabel(e.eventType)}</p>
-                <h3 className="mt-0.5 font-semibold text-slate-900 group-hover:text-brand-700">{e.name}</h3>
-                <div className="mt-2 space-y-1 text-xs text-slate-500">
+                <h3 className="mt-1 font-semibold text-ink-900 group-hover:text-brand-700">{e.name}</h3>
+                <div className="mt-2 mb-4 space-y-1 text-xs text-ink-500">
                   <p className="flex items-center gap-1.5">
                     <CalendarDays className="size-3.5" /> {formatDate(e.eventDate, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
@@ -133,20 +135,21 @@ export default function EventsPage() {
                     </p>
                   )}
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center text-xs text-slate-500">
-                  <span className="flex flex-col items-center gap-0.5">
-                    <Layers className="size-3.5" /> <span className="font-semibold text-slate-800">{e.counts.categories}</span> categories
-                  </span>
-                  <span className="flex flex-col items-center gap-0.5">
-                    <UserRound className="size-3.5" /> <span className="font-semibold text-slate-800">{e.counts.contestants}</span> contestants
-                  </span>
-                  <span className="flex flex-col items-center gap-0.5">
-                    <Gavel className="size-3.5" /> <span className="font-semibold text-slate-800">{e.counts.judges}</span> judges
-                  </span>
-                </div>
+                <dl className="mt-auto grid grid-cols-3 divide-x divide-ink-100 border-t border-ink-100 pt-3 text-xs text-ink-500">
+                  {[
+                    ["Categories", e.counts.categories],
+                    ["Contestants", e.counts.contestants],
+                    ["Judges", e.counts.judges],
+                  ].map(([label, n]) => (
+                    <div key={label} className="px-2 first:pl-0">
+                      <dt>{label}</dt>
+                      <dd className="mt-0.5 text-base text-ink-900 tabular-nums">{n}</dd>
+                    </div>
+                  ))}
+                </dl>
                 {e.counts.sheets > 0 && (
                   <div className="mt-3">
-                    <div className="mb-1 flex justify-between text-[11px] text-slate-500">
+                    <div className="mb-1 flex justify-between text-[11px] text-ink-500">
                       <span>Score sheets submitted</span>
                       <span className="tabular-nums">
                         {e.counts.submittedSheets}/{e.counts.sheets}

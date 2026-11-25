@@ -150,13 +150,13 @@ export default function StaffTab() {
                   const p = progress[a._id];
                   return (
                     <tr key={a._id}>
-                      <td className="font-medium text-slate-600">Judge {a.order}</td>
+                      <td className="font-medium text-ink-600">Judge {a.order}</td>
                       <td>
                         <div className="flex items-center gap-3">
                           <Avatar name={a.user.name} size="sm" />
                           <div>
-                            <p className="font-medium text-slate-800">{a.user.name}</p>
-                            {a.user.title && <p className="text-xs text-slate-500">{a.user.title}</p>}
+                            <p className="font-medium text-ink-800">{a.user.name}</p>
+                            {a.user.title && <p className="text-xs text-ink-500">{a.user.title}</p>}
                           </div>
                         </div>
                       </td>
@@ -164,25 +164,25 @@ export default function StaffTab() {
                         {hasLogin(a) ? (
                           <div>
                             <Badge tone="green" dot>Scores own sheets</Badge>
-                            <p className="mt-1 text-xs text-slate-500">{a.user.email}</p>
+                            <p className="mt-1 text-xs text-ink-500">{a.user.email}</p>
                           </div>
                         ) : (
                           <Badge tone="gray">No sign-in · encoded by admin</Badge>
                         )}
                       </td>
                       <td>
-                        <div className="flex max-w-xs flex-wrap gap-1">{a.categories.length ? a.categories.map((c) => <Badge key={c._id}>{c.name}</Badge>) : <span className="text-xs text-slate-400">None</span>}</div>
+                        <div className="flex max-w-xs flex-wrap gap-1">{a.categories.length ? a.categories.map((c) => <Badge key={c._id}>{c.name}</Badge>) : <span className="text-xs text-ink-400">None</span>}</div>
                       </td>
                       <td>
                         {p?.expected ? (
                           <div className="flex items-center gap-2">
                             <ProgressBar value={p.submitted} max={p.expected} className="flex-1" />
-                            <span className="text-xs text-slate-500 tabular-nums">
+                            <span className="text-xs text-ink-500 tabular-nums">
                               {p.submitted}/{p.expected}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-400">—</span>
+                          <span className="text-xs text-ink-400">—</span>
                         )}
                       </td>
                       {editable && (
@@ -255,19 +255,19 @@ export default function StaffTab() {
             <Field label="Categories to judge" hint="The judge can score only these. Locked categories must be reopened before their panel changes.">
               <div className="grid gap-2 sm:grid-cols-2">
                 {categories.map((c) => (
-                  <label key={c._id} className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                  <label key={c._id} className="flex items-center gap-2 rounded-lg border border-ink-200 px-3 py-2 text-sm">
                     <input
                       type="checkbox"
                       disabled={c.configLocked}
                       checked={modal.categories.includes(c._id)}
                       onChange={(e) => setModal({ ...modal, categories: e.target.checked ? [...modal.categories, c._id] : modal.categories.filter((x) => x !== c._id) })}
-                      className="rounded border-slate-300"
+                      className="rounded border-ink-300"
                     />
                     {c.name}
-                    {c.configLocked && <span className="ml-auto text-[11px] text-slate-400">locked</span>}
+                    {c.configLocked && <span className="ml-auto text-[11px] text-ink-400">locked</span>}
                   </label>
                 ))}
-                {!categories.length && <p className="text-sm text-slate-500">No categories yet.</p>}
+                {!categories.length && <p className="text-sm text-ink-500">No categories yet.</p>}
               </div>
             </Field>
           </div>

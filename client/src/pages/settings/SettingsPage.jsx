@@ -85,7 +85,7 @@ export default function SettingsPage() {
             </Alert>
           </div>
         </Card>
-        <p className="text-xs text-slate-500">Last updated {formatDateTime(s.updatedAt)}</p>
+        <p className="text-xs text-ink-500">Last updated {formatDateTime(s.updatedAt)}</p>
       </div>
     </div>
   );

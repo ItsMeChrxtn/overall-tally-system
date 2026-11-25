@@ -24,7 +24,7 @@ export default function JudgeHistoryPage() {
     <div>
       <PageHeader title="Submission history" description="Your submitted score sheets. Scores are visible only where the event organizer allows it." />
       <Card>
-        <div className="border-b border-slate-100 px-5 py-3">
+        <div className="border-b border-ink-100 px-5 py-3">
           <SearchInput value={q} onChange={setQ} placeholder="Search event, category or contestant" className="w-full sm:w-80" />
         </div>
         {items === null ? (
@@ -47,8 +47,8 @@ export default function JudgeHistoryPage() {
               <tbody>
                 {filtered.map((s) => (
                   <tr key={s._id}>
-                    <td className="text-xs whitespace-nowrap text-slate-500">{formatDateTime(s.submittedAt)}</td>
-                    <td className="text-slate-700">{s.event.name}</td>
+                    <td className="text-xs whitespace-nowrap text-ink-500">{formatDateTime(s.submittedAt)}</td>
+                    <td className="text-ink-700">{s.event.name}</td>
                     <td>{s.category?.name}</td>
                     <td>
                       #{s.contestant?.number} {s.contestant?.name}
@@ -60,7 +60,7 @@ export default function JudgeHistoryPage() {
                       </div>
                     </td>
                     <td className="text-right tabular-nums">
-                      {!s.scoresVisible ? <span className="text-xs text-slate-400">Hidden by organizer</span> : s.rank ? `Rank ${s.rank}` : `${num(s.computedWeighted)} (total ${num(s.computedTotal)})`}
+                      {!s.scoresVisible ? <span className="text-xs text-ink-400">Hidden by organizer</span> : s.rank ? `Rank ${s.rank}` : `${num(s.computedWeighted)} (total ${num(s.computedTotal)})`}
                     </td>
                   </tr>
                 ))}

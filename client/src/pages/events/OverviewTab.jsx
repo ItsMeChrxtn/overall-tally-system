@@ -20,15 +20,15 @@ function ReadOnly({ event }) {
   return (
     <Card>
       <CardHeader title="Event information" />
-      <dl className="divide-y divide-slate-100">
+      <dl className="divide-y divide-ink-100">
         {rows.map(([k, v]) => (
           <div key={k} className="grid grid-cols-3 gap-4 px-5 py-3 text-sm">
-            <dt className="text-slate-500">{k}</dt>
-            <dd className="col-span-2 text-slate-800">{v}</dd>
+            <dt className="text-ink-500">{k}</dt>
+            <dd className="col-span-2 text-ink-800">{v}</dd>
           </div>
         ))}
       </dl>
-      {event.description && <p className="border-t border-slate-100 px-5 py-4 text-sm text-slate-600">{event.description}</p>}
+      {event.description && <p className="border-t border-ink-100 px-5 py-4 text-sm text-ink-600">{event.description}</p>}
     </Card>
   );
 }
@@ -197,15 +197,15 @@ export default function OverviewTab() {
                 ))}
               </Select>
             </Field>
-            <p className="text-xs text-slate-500">Last updated {formatDateTime(event.updatedAt)}</p>
+            <p className="text-xs text-ink-500">Last updated {formatDateTime(event.updatedAt)}</p>
           </div>
         </Card>
 
         <Card>
           <CardHeader title="Cover image" />
           <div className="p-5">
-            <div className="mb-3 flex h-36 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
-              {event.coverImage ? <img src={fileUrl(event.coverImage)} alt="" className="size-full object-cover" /> : <span className="text-xs text-slate-400">No cover image</span>}
+            <div className="mb-3 flex h-36 items-center justify-center overflow-hidden rounded-lg bg-ink-100">
+              {event.coverImage ? <img src={fileUrl(event.coverImage)} alt="" className="size-full object-cover" /> : <span className="text-xs text-ink-400">No cover image</span>}
             </div>
             <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={(e) => uploadCover(e.target.files?.[0])} />
             <Button variant="secondary" size="sm" icon={ImageUp} disabled={!editable} onClick={() => fileRef.current?.click()}>

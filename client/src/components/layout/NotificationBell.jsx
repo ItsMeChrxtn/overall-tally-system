@@ -7,7 +7,7 @@ import { timeAgo } from '../../lib/format';
 import { cx } from '../ui';
 import { toast } from '../../lib/alerts';
 
-const DOT = { success: 'bg-emerald-500', warning: 'bg-amber-500', approval: 'bg-violet-500', scoring: 'bg-brand-500', info: 'bg-sky-500' };
+const DOT = { success: 'bg-brand-500', warning: 'bg-orange-500', approval: 'bg-gold-500', scoring: 'bg-brand-500', info: 'bg-sky-500' };
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -57,14 +57,14 @@ export default function NotificationBell() {
 
   return (
     <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen((o) => !o)} className="relative inline-flex size-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Notifications">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="relative inline-flex size-9 items-center justify-center rounded-md text-ink-500 hover:bg-ink-100 hover:text-ink-800" aria-label="Notifications">
         <Bell className="size-4.5" />
-        {unread > 0 && <span className="absolute top-1 right-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">{unread > 9 ? '9+' : unread}</span>}
+        {unread > 0 && <span className="absolute top-1 right-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 font-mono text-[10px] font-semibold text-white">{unread > 9 ? '9+' : unread}</span>}
       </button>
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <p className="text-sm font-semibold text-slate-900">Notifications</p>
+        <div className="absolute right-0 z-40 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-ink-200 bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3">
+            <p className="text-sm font-semibold text-ink-900">Notifications</p>
             {unread > 0 && (
               <button type="button" onClick={readAll} className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700">
                 <CheckCheck className="size-3.5" /> Mark all read
@@ -73,15 +73,15 @@ export default function NotificationBell() {
           </div>
           <div className="max-h-96 overflow-y-auto">
             {items.length === 0 ? (
-              <p className="px-4 py-10 text-center text-sm text-slate-500">You’re all caught up.</p>
+              <p className="px-4 py-10 text-center text-sm text-ink-500">You’re all caught up.</p>
             ) : (
               items.map((n) => (
-                <button key={n._id} type="button" onClick={() => openItem(n)} className={cx('flex w-full gap-3 border-b border-slate-50 px-4 py-3 text-left hover:bg-slate-50', !n.read && 'bg-brand-50/40')}>
-                  <span className={cx('mt-1.5 size-2 shrink-0 rounded-full', n.read ? 'bg-slate-200' : DOT[n.type] || DOT.info)} />
+                <button key={n._id} type="button" onClick={() => openItem(n)} className={cx('flex w-full gap-3 border-b border-ink-50 px-4 py-3 text-left hover:bg-ink-50', !n.read && 'bg-brand-50/40')}>
+                  <span className={cx('mt-1.5 size-2 shrink-0 rounded-full', n.read ? 'bg-ink-200' : DOT[n.type] || DOT.info)} />
                   <span className="min-w-0">
-                    <span className="block text-sm font-medium text-slate-800">{n.title}</span>
-                    {n.message && <span className="mt-0.5 line-clamp-2 block text-xs text-slate-500">{n.message}</span>}
-                    <span className="mt-1 block text-[11px] text-slate-400">{timeAgo(n.createdAt)}</span>
+                    <span className="block text-sm font-medium text-ink-800">{n.title}</span>
+                    {n.message && <span className="mt-0.5 line-clamp-2 block text-xs text-ink-500">{n.message}</span>}
+                    <span className="mt-1 block text-[11px] text-ink-400">{timeAgo(n.createdAt)}</span>
                   </span>
                 </button>
               ))

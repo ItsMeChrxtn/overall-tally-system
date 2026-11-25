@@ -140,7 +140,7 @@ export default function ContestantsTab() {
           )
         }
       />
-      <div className="flex flex-wrap gap-3 border-b border-slate-100 px-5 py-3">
+      <div className="flex flex-wrap gap-3 border-b border-ink-100 px-5 py-3">
         <SearchInput value={q} onChange={setQ} placeholder="Search number, name, team…" className="w-full sm:w-72" />
         <Select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className="w-full sm:w-56">
           <option value="">All categories</option>
@@ -177,19 +177,19 @@ export default function ContestantsTab() {
                     <div className="flex items-center gap-3">
                       <Avatar name={c.name} src={c.photo} />
                       <div className="min-w-0">
-                        <p className="font-medium text-slate-800">{c.name}</p>
+                        <p className="font-medium text-ink-800">{c.name}</p>
                         {c.isTeam && (
-                          <p className="flex items-center gap-1 text-xs text-slate-500">
+                          <p className="flex items-center gap-1 text-xs text-ink-500">
                             <Users className="size-3" /> Team · {c.members?.length || 0} members
                           </p>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="text-slate-600">{c.representing || '—'}</td>
+                  <td className="text-ink-600">{c.representing || '—'}</td>
                   <td>
                     <div className="flex max-w-xs flex-wrap gap-1">
-                      {c.categories.length ? c.categories.map((k) => <Badge key={k._id}>{k.name}</Badge>) : <span className="text-xs text-slate-400">None</span>}
+                      {c.categories.length ? c.categories.map((k) => <Badge key={k._id}>{k.name}</Badge>) : <span className="text-xs text-ink-400">None</span>}
                     </div>
                   </td>
                   <td>
@@ -270,7 +270,7 @@ export default function ContestantsTab() {
                 {categories.map((k) => {
                   const checked = modal.categories.includes(k._id);
                   return (
-                    <label key={k._id} className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                    <label key={k._id} className="flex items-center gap-2 rounded-lg border border-ink-200 px-3 py-2 text-sm">
                       <input
                         type="checkbox"
                         checked={checked}
@@ -279,14 +279,14 @@ export default function ContestantsTab() {
                           const next = e.target.checked ? (event.settings.allowMultiCategoryContestants ? [...modal.categories, k._id] : [k._id]) : modal.categories.filter((x) => x !== k._id);
                           setModal({ ...modal, categories: next });
                         }}
-                        className="rounded border-slate-300"
+                        className="rounded border-ink-300"
                       />
                       {k.name}
-                      {k.configLocked && <span className="ml-auto text-[11px] text-slate-400">locked</span>}
+                      {k.configLocked && <span className="ml-auto text-[11px] text-ink-400">locked</span>}
                     </label>
                   );
                 })}
-                {!categories.length && <p className="text-sm text-slate-500">Create categories first.</p>}
+                {!categories.length && <p className="text-sm text-ink-500">Create categories first.</p>}
               </div>
             </Field>
           </div>

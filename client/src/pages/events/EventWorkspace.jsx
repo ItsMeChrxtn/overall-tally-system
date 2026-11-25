@@ -47,21 +47,21 @@ export default function EventWorkspace() {
 
   return (
     <div>
-      <Link to="/app/events" className="mb-3 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+      <Link to="/app/events" className="mb-3 inline-flex items-center gap-1 text-sm text-ink-500 hover:text-ink-800">
         <ChevronLeft className="size-4" /> Events
       </Link>
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{event.name}</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">{event.name}</h1>
             <StatusBadge status={event.status} />
           </div>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-ink-500">
             {eventTypeLabel(event.eventType)} · {formatDate(event.eventDate, { dateStyle: 'long' })}
             {event.venue && ` · ${event.venue}`}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-ink-500">
           <ClipboardList className="size-4" />
           {counts.submittedSheets} of {counts.sheets} started score sheets submitted
         </div>

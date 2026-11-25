@@ -44,7 +44,7 @@ export default function LoginPage() {
         <Field label="Password" htmlFor="password">
           <div className="relative">
             <Input id="password" type={show ? 'text' : 'password'} autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="pr-10" />
-            <button type="button" onClick={() => setShow((s) => !s)} className="absolute top-1/2 right-2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600" aria-label={show ? 'Hide password' : 'Show password'}>
+            <button type="button" onClick={() => setShow((s) => !s)} className="absolute top-1/2 right-2 -translate-y-1/2 p-1 text-ink-400 hover:text-ink-600" aria-label={show ? 'Hide password' : 'Show password'}>
               {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
@@ -58,7 +58,7 @@ export default function LoginPage() {
           Sign in
         </Button>
       </form>
-      <p className="mt-8 text-center text-sm text-slate-500">
+      <p className="mt-8 text-center text-sm text-ink-500">
         Looking for results?{' '}
         <Link to="/" className="font-medium text-brand-600 hover:text-brand-700">
           View published results

@@ -9,10 +9,10 @@ import { promptReason, showError, toast } from '../../lib/alerts';
 import { useEventSocket } from '../../lib/socket';
 
 const CELL = {
-  submitted: { icon: CheckCircle2, cls: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100', label: 'Submitted' },
+  submitted: { icon: CheckCircle2, cls: 'bg-brand-50 text-brand-600 hover:bg-brand-100', label: 'Submitted' },
   draft: { icon: CircleDashed, cls: 'bg-amber-50 text-amber-600 hover:bg-amber-100', label: 'Draft' },
   reopened: { icon: RotateCcw, cls: 'bg-red-50 text-red-600 hover:bg-red-100', label: 'Reopened' },
-  not_started: { icon: Circle, cls: 'bg-slate-50 text-slate-300', label: 'Not started' },
+  not_started: { icon: Circle, cls: 'bg-ink-50 text-ink-300', label: 'Not started' },
 };
 
 export default function MonitoringTab() {
@@ -112,9 +112,9 @@ export default function MonitoringTab() {
             </option>
           ))}
         </Select>
-        <div className="flex items-center gap-3 text-xs text-slate-500">
+        <div className="flex items-center gap-3 text-xs text-ink-500">
           <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 animate-pulse rounded-full bg-emerald-500" /> Live
+            <span className="size-2 animate-pulse rounded-full bg-brand-500" /> Live
           </span>
           {lastUpdate && <span>Updated {timeAgo(lastUpdate)}</span>}
           <Button variant="ghost" size="sm" icon={RefreshCcw} onClick={load}>
@@ -135,24 +135,24 @@ export default function MonitoringTab() {
         <>
           <div className="grid gap-4 sm:grid-cols-3">
             <Card className="p-4">
-              <p className="text-xs font-medium text-slate-500">Submission progress</p>
+              <p className="text-xs font-medium text-ink-500">Submission progress</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">
                 {progress.submitted}
-                <span className="text-base font-normal text-slate-400">/{progress.expected}</span>
+                <span className="text-base font-normal text-ink-400">/{progress.expected}</span>
               </p>
               <ProgressBar value={progress.submitted} max={progress.expected} className="mt-2" />
             </Card>
             <Card className="p-4">
-              <p className="text-xs font-medium text-slate-500">Category status</p>
+              <p className="text-xs font-medium text-ink-500">Category status</p>
               <div className="mt-2">
                 <StatusBadge kind="category" status={progress.status} />
               </div>
-              <p className="mt-2 text-xs text-slate-500">{category?.latestResult ? `Latest result: v${category.latestResult.version} (${category.latestResult.status.replace('_', ' ')})` : 'No tally generated yet'}</p>
+              <p className="mt-2 text-xs text-ink-500">{category?.latestResult ? `Latest result: v${category.latestResult.version} (${category.latestResult.status.replace('_', ' ')})` : 'No tally generated yet'}</p>
             </Card>
             <Card className="p-4">
-              <p className="text-xs font-medium text-slate-500">Outstanding</p>
+              <p className="text-xs font-medium text-ink-500">Outstanding</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums">{progress.expected - progress.submitted}</p>
-              <p className="text-xs text-slate-500">{pctDone === 100 ? 'All score sheets are in.' : 'Sheets not yet submitted'}</p>
+              <p className="text-xs text-ink-500">{pctDone === 100 ? 'All score sheets are in.' : 'Sheets not yet submitted'}</p>
             </Card>
           </div>
 
@@ -161,7 +161,7 @@ export default function MonitoringTab() {
               title="Judge submission matrix"
               description="Click a cell to inspect the score sheet."
               actions={
-                <div className="hidden gap-3 text-xs text-slate-500 md:flex">
+                <div className="hidden gap-3 text-xs text-ink-500 md:flex">
                   {Object.entries(CELL).map(([k, v]) => (
                     <span key={k} className="inline-flex items-center gap-1">
                       <v.icon className={cx('size-3.5', v.cls.split(' ')[1])} /> {v.label}
@@ -174,7 +174,7 @@ export default function MonitoringTab() {
               <table className="table-base">
                 <thead>
                   <tr>
-                    <th className="sticky left-0 z-10 bg-slate-50">Judge</th>
+                    <th className="sticky left-0 z-10 bg-ink-50">Judge</th>
                     {progress.contestants.map((c) => (
                       <th key={c.contestantId} className="text-center" title={c.name}>
                         #{c.number}
@@ -188,7 +188,7 @@ export default function MonitoringTab() {
                     const done = j.cells.filter((c) => c.status === 'submitted').length;
                     return (
                       <tr key={j.judgeId}>
-                        <td className="sticky left-0 z-10 bg-white font-medium whitespace-nowrap text-slate-800">{j.name}</td>
+                        <td className="sticky left-0 z-10 bg-white font-medium whitespace-nowrap text-ink-800">{j.name}</td>
                         {j.cells.map((cell) => {
                           const cfg = CELL[cell.status] || CELL.not_started;
                           return (
@@ -199,7 +199,7 @@ export default function MonitoringTab() {
                             </td>
                           );
                         })}
-                        <td className="text-right text-xs whitespace-nowrap text-slate-500 tabular-nums">
+                        <td className="text-right text-xs whitespace-nowrap text-ink-500 tabular-nums">
                           {done}/{j.cells.length}
                         </td>
                       </tr>
@@ -230,12 +230,12 @@ export default function MonitoringTab() {
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <StatusBadge kind="sheet" status={selected.status} />
-              <span className="text-slate-500">{selected.submittedAt ? `Submitted ${formatDateTime(selected.submittedAt)}` : `Saved ${formatDateTime(selected.savedAt)}`}</span>
+              <span className="text-ink-500">{selected.submittedAt ? `Submitted ${formatDateTime(selected.submittedAt)}` : `Saved ${formatDateTime(selected.savedAt)}`}</span>
               <Badge>Config v{selected.configVersion}</Badge>
             </div>
             {selected.reopenReason && selected.status !== 'submitted' && <Alert tone="red" title="Reopened for correction">{selected.reopenReason}</Alert>}
             {usesCriteria ? (
-              <table className="table-base rounded-lg border border-slate-200">
+              <table className="table-base rounded-lg border border-ink-200">
                 <thead>
                   <tr>
                     <th>Criterion</th>
@@ -263,19 +263,19 @@ export default function MonitoringTab() {
               </p>
             )}
             <div>
-              <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+              <p className="mb-2 flex items-center gap-1.5 label-caps">
                 <History className="size-3.5" /> Sheet history
               </p>
               {history === null ? (
-                <p className="text-sm text-slate-400">Loading…</p>
+                <p className="text-sm text-ink-400">Loading…</p>
               ) : history.length === 0 ? (
-                <p className="text-sm text-slate-500">No submissions yet.</p>
+                <p className="text-sm text-ink-500">No submissions yet.</p>
               ) : (
                 <ul className="space-y-2">
                   {history.map((h, i) => (
-                    <li key={i} className="rounded-lg border border-slate-100 px-3 py-2 text-xs">
-                      <span className="font-medium text-slate-700 capitalize">{h.action}</span> by {h.by?.name || '—'} · {formatDateTime(h.at)}
-                      {h.note && <p className="mt-0.5 text-slate-500">{h.note}</p>}
+                    <li key={i} className="rounded-lg border border-ink-100 px-3 py-2 text-xs">
+                      <span className="font-medium text-ink-700 capitalize">{h.action}</span> by {h.by?.name || '—'} · {formatDateTime(h.at)}
+                      {h.note && <p className="mt-0.5 text-ink-500">{h.note}</p>}
                     </li>
                   ))}
                 </ul>

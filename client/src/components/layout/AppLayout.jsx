@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, CalendarRange, ChevronDown, ClipboardCheck, Globe, History, LayoutDashboard, LogOut, Menu, ScrollText, Settings, ShieldCheck, UserCircle, X } from 'lucide-react';
+import { BarChart3, CalendarRange, ChevronDown, ClipboardCheck, Globe, History, LayoutDashboard, LogOut, Menu, ScrollText, Settings, UserCircle, X } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLE_LABELS } from '../../lib/format';
 import { Avatar, cx } from '../ui';
 import NotificationBell from './NotificationBell';
+import Logo from '../Logo';
 import ErrorBoundary from '../ErrorBoundary';
 import { confirmAction } from '../../lib/alerts';
 
@@ -51,30 +52,29 @@ const NAV = {
 function Sidebar({ user, onNavigate }) {
   const groups = NAV[user.role] || [];
   return (
-    <div className="flex h-full flex-col bg-slate-900 text-slate-300">
-      <Link to="/app" onClick={onNavigate} className="flex h-16 items-center gap-2.5 border-b border-white/5 px-5">
-        <span className="inline-flex size-8 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <BarChart3 className="size-4.5" />
-        </span>
-        <span className="leading-tight">
-          <span className="block text-sm font-semibold text-white">Overall Tally</span>
-          <span className="block text-[11px] text-slate-400">Competition Scoring</span>
-        </span>
+    <div className="flex h-full flex-col border-r border-ink-200 bg-ink-100/60">
+      <Link to="/app" onClick={onNavigate} className="flex h-14 items-center px-4">
+        <Logo sub="Scoring & tabulation" />
       </Link>
-      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 pt-4 pb-5">
         {groups.map((g) => (
           <div key={g.section}>
-            <p className="mb-2 px-3 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">{g.section}</p>
-            <div className="space-y-0.5">
+            <p className="label-caps mb-1.5 px-2.5">{g.section}</p>
+            <div className="space-y-px">
               {g.items.map(({ to, label, icon: Icon, end }) => (
                 <NavLink
                   key={to}
                   to={to}
                   end={end}
                   onClick={onNavigate}
-                  className={({ isActive }) => cx('flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors', isActive ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-slate-100')}
+                  className={({ isActive }) =>
+                    cx(
+                      'relative flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-sm transition-colors',
+                      isActive ? 'bg-white font-medium text-ink-900 shadow-sm ring-1 ring-ink-200 before:absolute before:inset-y-2 before:-left-3 before:w-[3px] before:rounded-r-sm before:bg-brand-600' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+                    )
+                  }
                 >
-                  <Icon className="size-4" />
+                  <Icon className="size-4 text-current opacity-80" strokeWidth={1.75} />
                   {label}
                 </NavLink>
               ))}
@@ -82,9 +82,10 @@ function Sidebar({ user, onNavigate }) {
           </div>
         ))}
       </nav>
-      <div className="border-t border-white/5 p-3">
-        <Link to="/" target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-white/5 hover:text-slate-100">
-          <Globe className="size-4" /> Public results site
+      <div className="border-t border-ink-200 p-3">
+        <Link to="/" target="_blank" className="flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-sm text-ink-600 hover:bg-ink-100 hover:text-ink-900">
+          <Globe className="size-4" strokeWidth={1.75} /> Public results
+          <span className="ml-auto text-[11px] text-ink-400">↗</span>
         </Link>
       </div>
     </div>
@@ -101,24 +102,24 @@ function UserMenu({ user, onLogout }) {
   }, []);
   return (
     <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center gap-2.5 rounded-lg py-1 pr-2 pl-1 hover:bg-slate-100">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center gap-2.5 rounded-md py-1 pr-2 pl-1 hover:bg-ink-100">
         <Avatar name={user.name} size="sm" />
         <span className="hidden text-left leading-tight sm:block">
-          <span className="block text-sm font-medium text-slate-800">{user.name}</span>
-          <span className="block text-[11px] text-slate-500">{ROLE_LABELS[user.role]}</span>
+          <span className="block text-sm font-medium text-ink-800">{user.name}</span>
+          <span className="block text-[11px] text-ink-500">{ROLE_LABELS[user.role]}</span>
         </span>
-        <ChevronDown className="hidden size-4 text-slate-400 sm:block" />
+        <ChevronDown className="hidden size-4 text-ink-400 sm:block" />
       </button>
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
-          <div className="border-b border-slate-100 px-4 py-2.5">
-            <p className="truncate text-sm font-medium text-slate-800">{user.name}</p>
-            <p className="truncate text-xs text-slate-500">{user.email}</p>
+        <div className="absolute right-0 z-40 mt-1.5 w-56 overflow-hidden rounded-lg border border-ink-200 bg-white py-1 shadow-lg">
+          <div className="border-b border-ink-100 px-4 py-2.5">
+            <p className="truncate text-sm font-medium text-ink-800">{user.name}</p>
+            <p className="truncate text-xs text-ink-500">{user.email}</p>
           </div>
-          <Link to="/app/profile" onClick={() => setOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+          <Link to="/app/profile" onClick={() => setOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-ink-700 hover:bg-ink-50">
             <UserCircle className="size-4" /> Profile & password
           </Link>
-          <button type="button" onClick={onLogout} className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+          <button type="button" onClick={onLogout} className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-700 hover:bg-red-50">
             <LogOut className="size-4" /> Sign out
           </button>
         </div>
@@ -149,24 +150,21 @@ export default function AppLayout() {
       </aside>
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/50" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-0 bg-ink-950/40" onClick={() => setMobileOpen(false)} />
           <div className="relative h-full w-72 max-w-[85vw]">
             <Sidebar user={user} onNavigate={() => setMobileOpen(false)} />
-            <button type="button" onClick={() => setMobileOpen(false)} className="absolute top-4 -right-11 inline-flex size-9 items-center justify-center rounded-lg bg-white text-slate-700" aria-label="Close menu">
+            <button type="button" onClick={() => setMobileOpen(false)} className="absolute top-4 -right-11 inline-flex size-9 items-center justify-center rounded-md bg-white text-ink-700" aria-label="Close menu">
               <X className="size-4" />
             </button>
           </div>
         </div>
       )}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6">
-          <button type="button" onClick={() => setMobileOpen(true)} className="inline-flex size-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open menu">
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-ink-200 bg-ink-50/95 px-4 backdrop-blur-sm sm:px-6">
+          <button type="button" onClick={() => setMobileOpen(true)} className="inline-flex size-9 items-center justify-center rounded-md text-ink-600 hover:bg-ink-100 lg:hidden" aria-label="Open menu">
             <Menu className="size-5" />
           </button>
-          <div className="hidden items-center gap-2 text-xs text-slate-500 md:flex">
-            <ShieldCheck className="size-4 text-emerald-600" />
-            Signed in as <span className="font-medium text-slate-700">{ROLE_LABELS[user.role]}</span>
-          </div>
+          <p className="hidden font-mono text-xs text-ink-500 md:block">{new Date().toLocaleDateString('en-PH', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</p>
           <div className="ml-auto flex items-center gap-1.5">
             <NotificationBell />
             <UserMenu user={user} onLogout={handleLogout} />

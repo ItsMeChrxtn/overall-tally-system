@@ -170,7 +170,7 @@ function JudgeSheet({ data, judge, reload }) {
                 criteria.map((cr) => (
                   <th key={cr.criterionId} className="min-w-28 text-right" title={cr.description || ''}>
                     <span className="block leading-tight">{cr.name}</span>
-                    <span className="block text-[11px] font-normal text-slate-400">
+                    <span className="block text-[11px] font-normal text-ink-400">
                       {cr.minScore}–{cr.maxScore}
                       {cr.weight ? ` · ${cr.weight}%` : ''}
                     </span>
@@ -190,11 +190,11 @@ function JudgeSheet({ data, judge, reload }) {
               const ro = locked(c._id);
               const pv = category.usesCriteria ? rowPreview(c._id) : null;
               return (
-                <tr key={c._id} className={cx(ro && 'bg-slate-50/60')}>
-                  <td className="font-semibold text-slate-500 tabular-nums">{c.number}</td>
+                <tr key={c._id} className={cx(ro && 'bg-ink-50/60')}>
+                  <td className="font-semibold text-ink-500 tabular-nums">{c.number}</td>
                   <td>
-                    <p className="font-medium text-slate-800">{c.name}</p>
-                    {c.representing && <p className="text-xs text-slate-500">{c.representing}</p>}
+                    <p className="font-medium text-ink-800">{c.name}</p>
+                    {c.representing && <p className="text-xs text-ink-500">{c.representing}</p>}
                   </td>
                   {category.usesCriteria ? (
                     criteria.map((cr) => {
@@ -216,8 +216,8 @@ function JudgeSheet({ data, judge, reload }) {
                             onFocus={(e) => e.target.select()}
                             title={err || ''}
                             className={cx(
-                              'h-9 w-24 rounded-md border px-2 text-right text-sm font-semibold tabular-nums focus:ring-2 focus:outline-none disabled:border-transparent disabled:bg-transparent disabled:text-slate-600',
-                              err ? 'border-red-400 bg-red-50 focus:ring-red-200' : 'border-slate-300 focus:border-brand-500 focus:ring-brand-500/20'
+                              'h-9 w-24 rounded-md border px-2 text-right text-sm font-semibold tabular-nums focus:ring-2 focus:outline-none disabled:border-transparent disabled:bg-transparent disabled:text-ink-600',
+                              err ? 'border-red-400 bg-red-50 focus:ring-red-200' : 'border-ink-300 focus:border-brand-500 focus:ring-brand-500/20'
                             )}
                           />
                         </td>
@@ -229,7 +229,7 @@ function JudgeSheet({ data, judge, reload }) {
                         disabled={ro}
                         value={grid[c._id]?.rank ?? ''}
                         onChange={(e) => set(c._id, 'rank', e.target.value)}
-                        className={cx('h-9 w-24 rounded-md border px-2 text-sm', errors[`${c._id}:rank`] ? 'border-red-400 bg-red-50' : 'border-slate-300')}
+                        className={cx('h-9 w-24 rounded-md border px-2 text-sm', errors[`${c._id}:rank`] ? 'border-red-400 bg-red-50' : 'border-ink-300')}
                       >
                         <option value="">—</option>
                         {contestants.map((_, k) => (
@@ -240,7 +240,7 @@ function JudgeSheet({ data, judge, reload }) {
                       </select>
                     </td>
                   )}
-                  {category.usesCriteria && <td className="text-right font-semibold tabular-nums text-slate-800">{pv ? num(pv.total) : <span className="text-slate-300">—</span>}</td>}
+                  {category.usesCriteria && <td className="text-right font-semibold tabular-nums text-ink-800">{pv ? num(pv.total) : <span className="text-ink-300">—</span>}</td>}
                   <td>
                     <Badge tone={st.tone} dot>
                       {st.label}
@@ -253,13 +253,13 @@ function JudgeSheet({ data, judge, reload }) {
         </table>
       </div>
       {hasErrors && (
-        <p className="border-t border-slate-100 px-5 py-2 text-xs text-red-600">
+        <p className="border-t border-ink-100 px-5 py-2 text-xs text-red-600">
           {Object.values(errors)[0]} — hover a red cell for details.
         </p>
       )}
       {!allSubmitted && category.scoringOpen && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-4">
-          <p className="flex items-center gap-1.5 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 bg-ink-50/70 px-5 py-4">
+          <p className="flex items-center gap-1.5 text-xs text-ink-500">
             <Keyboard className="size-3.5" /> Totals here are a preview; official scores are computed by the server.
           </p>
           <div className="flex gap-2">
@@ -345,11 +345,11 @@ export default function EncodeTab() {
               ))}
             </Select>
           </Field>
-          {data?.category && <p className="pb-2 text-sm text-slate-500">{data.category.methodLabel}</p>}
+          {data?.category && <p className="pb-2 text-sm text-ink-500">{data.category.methodLabel}</p>}
         </div>
         {judges.length > 0 && (
           <div className="mt-4">
-            <p className="mb-1.5 text-sm font-medium text-slate-700">Judge's score sheet</p>
+            <p className="mb-1.5 text-sm font-medium text-ink-700">Judge's score sheet</p>
             <div className="flex flex-wrap gap-2">
               {judges.map((j) => {
                 const done = judgeProgress(j);
@@ -359,16 +359,16 @@ export default function EncodeTab() {
                     key={j.userId}
                     type="button"
                     onClick={() => setParams({ category: categoryId, judge: j.userId })}
-                    className={cx('min-w-40 rounded-lg border px-3 py-2 text-left transition-colors', active ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500' : 'border-slate-200 hover:bg-slate-50')}
+                    className={cx('min-w-40 rounded-lg border px-3 py-2 text-left transition-colors', active ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500' : 'border-ink-200 hover:bg-ink-50')}
                   >
-                    <span className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                    <span className="flex items-center justify-between gap-2 text-xs text-ink-500">
                       Seat {j.order}
                       {j.selfScoring && <Badge tone="green">Self-scoring</Badge>}
                     </span>
-                    <span className="block truncate text-sm font-medium text-slate-800">{j.name}</span>
+                    <span className="block truncate text-sm font-medium text-ink-800">{j.name}</span>
                     <span className="mt-1 flex items-center gap-2">
                       <ProgressBar value={done} max={data.contestants.length || 1} className="flex-1" />
-                      <span className="text-[11px] text-slate-500 tabular-nums">
+                      <span className="text-[11px] text-ink-500 tabular-nums">
                         {done}/{data.contestants.length}
                       </span>
                     </span>

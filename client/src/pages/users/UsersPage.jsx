@@ -7,7 +7,7 @@ import { ROLE_LABELS, formatDateTime } from '../../lib/format';
 import { confirmAction, showError, toast } from '../../lib/alerts';
 import { validatePassword } from '../auth/PasswordFields';
 
-const ROLE_TONE = { super_admin: 'red', event_admin: 'brand', tabulator: 'violet', judge: 'blue' };
+const ROLE_TONE = { super_admin: 'solid', event_admin: 'brand', tabulator: 'amber', judge: 'blue' };
 
 function suggestPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -116,7 +116,7 @@ export default function UsersPage() {
         }
       />
       <Card>
-        <div className="flex flex-wrap gap-3 border-b border-slate-100 px-5 py-3">
+        <div className="flex flex-wrap gap-3 border-b border-ink-100 px-5 py-3">
           <SearchInput value={q} onChange={setQ} placeholder="Search name, email, affiliation" className="w-full sm:w-72" />
           <Select value={role} onChange={(e) => setRole(e.target.value)} className="w-full sm:w-44">
             <option value="">All roles</option>
@@ -156,17 +156,17 @@ export default function UsersPage() {
                       <div className="flex items-center gap-3">
                         <Avatar name={u.name} size="sm" />
                         <div className="min-w-0">
-                          <p className="font-medium text-slate-800">
-                            {u.name} {u._id === me._id && <span className="text-xs font-normal text-slate-400">(you)</span>}
+                          <p className="font-medium text-ink-800">
+                            {u.name} {u._id === me._id && <span className="text-xs font-normal text-ink-400">(you)</span>}
                           </p>
-                          <p className="text-xs text-slate-500">{u.email}</p>
+                          <p className="text-xs text-ink-500">{u.email}</p>
                         </div>
                       </div>
                     </td>
                     <td>
                       <Badge tone={ROLE_TONE[u.role]}>{ROLE_LABELS[u.role]}</Badge>
                     </td>
-                    <td className="text-slate-600">{[u.title, u.affiliation].filter(Boolean).join(' · ') || '—'}</td>
+                    <td className="text-ink-600">{[u.title, u.affiliation].filter(Boolean).join(' · ') || '—'}</td>
                     <td>
                       <div className="flex flex-wrap gap-1">
                         <Badge tone={u.status === 'active' ? 'green' : 'red'} dot>
@@ -175,12 +175,12 @@ export default function UsersPage() {
                         {u.mustChangePassword && <Badge tone="amber">temp password</Badge>}
                       </div>
                     </td>
-                    <td className="text-xs text-slate-500">{formatDateTime(u.lastLoginAt)}</td>
+                    <td className="text-xs text-ink-500">{formatDateTime(u.lastLoginAt)}</td>
                     <td>
                       <div className="flex justify-end">
                         <IconButton icon={Pencil} label="Edit" onClick={() => openEdit(u)} />
                         <IconButton icon={KeyRound} label="Reset password" onClick={() => resetPassword(u)} />
-                        {u._id !== me._id && <IconButton icon={Power} label={u.status === 'active' ? 'Deactivate' : 'Activate'} onClick={() => toggleStatus(u)} className={u.status === 'active' ? 'hover:text-red-600' : 'hover:text-emerald-600'} />}
+                        {u._id !== me._id && <IconButton icon={Power} label={u.status === 'active' ? 'Deactivate' : 'Activate'} onClick={() => toggleStatus(u)} className={u.status === 'active' ? 'hover:text-red-600' : 'hover:text-brand-600'} />}
                       </div>
                     </td>
                   </tr>
@@ -190,7 +190,7 @@ export default function UsersPage() {
           </div>
         )}
         {data && data.total > 0 && (
-          <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm text-slate-500">
+          <div className="flex items-center justify-between border-t border-ink-100 px-5 py-3 text-sm text-ink-500">
             <span>
               {data.total} accounts · page {data.page} of {data.pages}
             </span>

@@ -1,11 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CalendarDays, ChevronRight, MapPin, Trophy } from 'lucide-react';
+import { Link, useOutletContext } from 'react-router-dom';
+import { ArrowUpRight, MapPin, Trophy } from 'lucide-react';
 import api, { apiErrorMessage, fileUrl } from '../../api/client';
-import { Alert, Badge, EmptyState, SearchInput, Skeleton } from '../../components/ui';
+import { Alert, EmptyState, SearchInput, Skeleton } from '../../components/ui';
 import { eventTypeLabel, formatDate } from '../../lib/format';
 
+function DateBlock({ date }) {
+  const d = date ? new Date(date) : null;
+  if (!d || Number.isNaN(d.getTime())) return <div className="w-14 shrink-0" />;
+  return (
+    <div className="w-14 shrink-0 text-center leading-none">
+      <p className="font-mono text-[11px] text-ink-500 uppercase">{d.toLocaleDateString('en-PH', { month: 'short' })}</p>
+      <p className="mt-1 font-display text-[28px] font-semibold text-ink-900">{d.getDate()}</p>
+      <p className="mt-1 font-mono text-[11px] text-ink-400">{d.getFullYear()}</p>
+    </div>
+  );
+}
+
 export default function LandingPage() {
+  const { settings } = useOutletContext() || {};
   const [events, setEvents] = useState(null);
   const [error, setError] = useState('');
   const [q, setQ] = useState('');
@@ -24,63 +37,63 @@ export default function LandingPage() {
 
   return (
     <div>
-      <section className="border-b border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <Badge tone="brand">Official results</Badge>
-          <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Competition results, verified and approved.</h1>
-          <p className="mt-3 max-w-2xl text-base text-slate-600">Browse winners and rankings released by the organizers. Results appear here only after tabulation has been verified and formally approved.</p>
+      <section className="border-b border-ink-200">
+        <div className="mx-auto max-w-5xl px-4 pt-14 pb-10 sm:px-6 sm:pt-20">
+          <p className="label-caps text-brand-700">{settings?.organizationName || 'Results board'}</p>
+          <h1 className="mt-3 max-w-3xl font-display text-4xl leading-[1.1] font-semibold text-ink-900 sm:text-5xl">Final rankings and winners, as certified by the board of judges.</h1>
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-600">Results are posted here only after every score sheet has been checked by the tabulators and signed off by the organizers.</p>
         </div>
       </section>
-      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Published events</h2>
-          <SearchInput value={q} onChange={setQ} placeholder="Search events or venues" className="w-full sm:w-72" />
+
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <h2 className="text-sm font-semibold text-ink-900">
+            Released results {events?.length ? <span className="ml-1 font-mono font-normal text-ink-400">{events.length}</span> : null}
+          </h2>
+          <SearchInput value={q} onChange={setQ} placeholder="Event or venue" className="w-full sm:w-64" />
         </div>
-        {error && <Alert tone="amber" className="mb-6">{error}</Alert>}
+        {error && (
+          <Alert tone="amber" className="mb-6">
+            {error}
+          </Alert>
+        )}
         {events === null ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-px">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-64 rounded-xl" />
+              <Skeleton key={i} className="h-24" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState icon={Trophy} title="No published results yet" description="Check back after the organizers release the official results." />
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((e) => (
-              <Link key={e._id} to={`/results/${e._id}`} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-                <div className="relative h-36 bg-gradient-to-br from-slate-800 to-brand-800">
-                  {e.coverImage && <img src={fileUrl(e.coverImage)} alt="" className="absolute inset-0 size-full object-cover" />}
-                  <div className="absolute bottom-3 left-3">
-                    <Badge tone="gray" className="bg-white/90">
-                      {eventTypeLabel(e.eventType)}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-slate-900 group-hover:text-brand-700">{e.name}</h3>
-                  <div className="mt-2 space-y-1 text-sm text-slate-500">
-                    <p className="flex items-center gap-2">
-                      <CalendarDays className="size-4" /> {formatDate(e.eventDate, { dateStyle: 'long' })}
-                    </p>
-                    {e.venue && (
-                      <p className="flex items-center gap-2">
-                        <MapPin className="size-4" /> {e.venue}
-                      </p>
-                    )}
-                  </div>
-                  <div className="mt-4 flex items-center justify-between text-sm">
-                    <span className="text-slate-500">
-                      {e.publishedResults} result{e.publishedResults === 1 ? '' : 's'} released
-                    </span>
-                    <span className="inline-flex items-center font-medium text-brand-600">
-                      View <ChevronRight className="size-4" />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+          <div className="rounded-lg border border-dashed border-ink-300">
+            <EmptyState icon={Trophy} title={q ? 'Nothing matches that search' : 'No results have been released yet'} description={q ? undefined : 'Check back after the awarding ceremony.'} />
           </div>
+        ) : (
+          <ul className="divide-y divide-ink-200 border-y border-ink-200">
+            {filtered.map((e) => (
+              <li key={e._id}>
+                <Link to={`/results/${e._id}`} className="group -mx-3 flex items-center gap-5 rounded-md px-3 py-5 transition-colors hover:bg-white">
+                  <DateBlock date={e.eventDate} />
+                  <div className="min-w-0 flex-1 border-l border-ink-200 pl-5">
+                    <p className="text-xs text-ink-500">{eventTypeLabel(e.eventType)}</p>
+                    <h3 className="mt-0.5 text-lg leading-snug font-semibold text-ink-900 group-hover:text-brand-700">{e.name}</h3>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-500">
+                      {e.venue && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="size-3.5" strokeWidth={1.75} /> {e.venue}
+                        </span>
+                      )}
+                      <span>
+                        {e.publishedResults} {e.publishedResults === 1 ? 'category' : 'categories'} released
+                      </span>
+                      <span className="sm:hidden">{formatDate(e.eventDate, { dateStyle: 'medium' })}</span>
+                    </p>
+                  </div>
+                  {e.coverImage && <img src={fileUrl(e.coverImage)} alt="" className="hidden h-16 w-24 shrink-0 rounded-md object-cover sm:block" />}
+                  <ArrowUpRight className="size-5 shrink-0 text-ink-300 transition-colors group-hover:text-brand-700" strokeWidth={1.75} />
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </div>

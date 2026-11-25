@@ -46,7 +46,7 @@ export default function ChangePasswordRequired() {
         <Button type="submit" className="w-full" size="lg" loading={busy}>
           Update password
         </Button>
-        <button type="button" onClick={() => logout().then(() => navigate('/login'))} className="w-full text-center text-sm text-slate-500 hover:text-slate-800">
+        <button type="button" onClick={() => logout().then(() => navigate('/login'))} className="w-full text-center text-sm text-ink-500 hover:text-ink-800">
           Sign out instead
         </button>
       </form>

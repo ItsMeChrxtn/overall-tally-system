@@ -101,16 +101,16 @@ export default function CategoriesTab() {
                   return (
                     <tr key={c._id} className="cursor-pointer" onClick={() => navigate(`/app/events/${event._id}/categories/${c._id}`)}>
                       <td>
-                        <div className="flex items-center gap-2 font-medium text-slate-800">
-                          {c.configLocked && <Lock className="size-3.5 text-slate-400" />}
+                        <div className="flex items-center gap-2 font-medium text-ink-800">
+                          {c.configLocked && <Lock className="size-3.5 text-ink-400" />}
                           {c.name}
                         </div>
-                        {c.includeInOverall && <span className="text-xs text-slate-500">Overall weight {c.overallWeight}%</span>}
+                        {c.includeInOverall && <span className="text-xs text-ink-500">Overall weight {c.overallWeight}%</span>}
                       </td>
-                      <td className="text-slate-600">{c.methodLabel}</td>
+                      <td className="text-ink-600">{c.methodLabel}</td>
                       <td>
                         {c.scoringMethod === 'rank' ? (
-                          <span className="text-xs text-slate-500">Ranking</span>
+                          <span className="text-xs text-ink-500">Ranking</span>
                         ) : (
                           <span className="flex items-center gap-2">
                             {c.stats.criteria}
@@ -127,17 +127,17 @@ export default function CategoriesTab() {
                         {c.stats.expectedSheets ? (
                           <div className="flex items-center gap-2">
                             <ProgressBar value={c.stats.submittedSheets} max={c.stats.expectedSheets} className="flex-1" />
-                            <span className="text-xs text-slate-500 tabular-nums">
+                            <span className="text-xs text-ink-500 tabular-nums">
                               {c.stats.submittedSheets}/{c.stats.expectedSheets}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-400">—</span>
+                          <span className="text-xs text-ink-400">—</span>
                         )}
                       </td>
-                      <td>{c.latestResult ? <StatusBadge kind="result" status={c.latestResult.status} /> : <span className="text-xs text-slate-400">—</span>}</td>
+                      <td>{c.latestResult ? <StatusBadge kind="result" status={c.latestResult.status} /> : <span className="text-xs text-ink-400">—</span>}</td>
                       <td>
-                        <Link to={`/app/events/${event._id}/categories/${c._id}`} onClick={(e) => e.stopPropagation()} className="inline-flex text-slate-400 hover:text-slate-700" aria-label="Open category">
+                        <Link to={`/app/events/${event._id}/categories/${c._id}`} onClick={(e) => e.stopPropagation()} className="inline-flex text-ink-400 hover:text-ink-700" aria-label="Open category">
                           <ChevronRight className="size-4" />
                         </Link>
                       </td>

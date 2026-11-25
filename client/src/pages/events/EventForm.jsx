@@ -97,7 +97,7 @@ export default function EventForm({ value, onChange, errors = {}, showStatus = f
             multiple
             value={value.adminIds}
             onChange={(e) => onChange({ ...value, adminIds: [...e.target.selectedOptions].map((o) => o.value) })}
-            className="block h-28 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none"
+            className="block h-28 w-full rounded-lg border border-ink-300 px-2 py-1 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none"
           >
             {admins.map((a) => (
               <option key={a._id} value={a._id}>

@@ -34,7 +34,7 @@ export async function confirmAction({ title, text, confirmText = 'Confirm', dang
     cancelButtonText: 'Cancel',
     reverseButtons: true,
     focusCancel: danger,
-    ...(danger ? { confirmButtonColor: '#dc2626' } : {}),
+    ...(danger ? { confirmButtonColor: '#b91c1c' } : {}),
   });
   return res.isConfirmed;
 }

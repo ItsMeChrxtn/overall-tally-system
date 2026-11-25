@@ -54,10 +54,10 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <Avatar name={user.name} size="lg" />
               <div>
-                <p className="font-medium text-slate-900">{user.email}</p>
+                <p className="font-medium text-ink-900">{user.email}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <Badge tone="brand">{ROLE_LABELS[user.role]}</Badge>
-                  <span className="text-xs text-slate-500">Last sign-in {formatDateTime(user.lastLoginAt)}</span>
+                  <span className="text-xs text-ink-500">Last sign-in {formatDateTime(user.lastLoginAt)}</span>
                 </div>
               </div>
             </div>

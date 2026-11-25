@@ -37,10 +37,10 @@ function TieRulesEditor({ rules, onChange, criteria, judges, disabled, usesCrite
   const hasShared = rules.some((r) => r.type === 'shared');
   return (
     <div className="space-y-2">
-      {rules.length === 0 && <p className="text-sm text-slate-500">No rules — tied contestants will share the rank.</p>}
+      {rules.length === 0 && <p className="text-sm text-ink-500">No rules — tied contestants will share the rank.</p>}
       {rules.map((r, i) => (
-        <div key={i} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 p-2">
-          <span className="inline-flex size-6 items-center justify-center rounded-full bg-white text-xs font-semibold text-slate-600 ring-1 ring-slate-200">{i + 1}</span>
+        <div key={i} className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 bg-ink-50/60 p-2">
+          <span className="inline-flex size-6 items-center justify-center rounded-full bg-white text-xs font-semibold text-ink-600 ring-1 ring-ink-200">{i + 1}</span>
           <Select disabled={disabled} value={r.type} onChange={(e) => update(i, { type: e.target.value, criterion: null, judge: null })} className="min-w-0 flex-1 sm:max-w-sm">
             {TIE_RULES.filter((t) => usesCriteria || !t.value.includes('criterion')).map((t) => (
               <option key={t.value} value={t.value}>
@@ -89,19 +89,19 @@ function TieRulesEditor({ rules, onChange, criteria, judges, disabled, usesCrite
 /** Checkbox picker used for contestants and judges. */
 function Picker({ items, selected, onChange, disabled, render, empty }) {
   const all = items.length > 0 && items.every((i) => selected.includes(i.id));
-  if (!items.length) return <p className="px-5 py-6 text-sm text-slate-500">{empty}</p>;
+  if (!items.length) return <p className="px-5 py-6 text-sm text-ink-500">{empty}</p>;
   return (
     <div>
       {!disabled && (
-        <label className="flex items-center gap-2 border-b border-slate-100 px-5 py-2 text-xs font-medium text-slate-500">
-          <input type="checkbox" checked={all} onChange={() => onChange(all ? [] : items.map((i) => i.id))} className="rounded border-slate-300" /> Select all
+        <label className="flex items-center gap-2 border-b border-ink-100 px-5 py-2 text-xs font-medium text-ink-500">
+          <input type="checkbox" checked={all} onChange={() => onChange(all ? [] : items.map((i) => i.id))} className="rounded border-ink-300" /> Select all
         </label>
       )}
-      <ul className="max-h-80 divide-y divide-slate-50 overflow-y-auto">
+      <ul className="max-h-80 divide-y divide-ink-50 overflow-y-auto">
         {items.map((i) => (
           <li key={i.id}>
-            <label className={cx('flex items-center gap-3 px-5 py-2', disabled ? 'cursor-default' : 'cursor-pointer hover:bg-slate-50')}>
-              <input type="checkbox" disabled={disabled} checked={selected.includes(i.id)} onChange={(e) => onChange(e.target.checked ? [...selected, i.id] : selected.filter((x) => x !== i.id))} className="rounded border-slate-300 text-brand-600" />
+            <label className={cx('flex items-center gap-3 px-5 py-2', disabled ? 'cursor-default' : 'cursor-pointer hover:bg-ink-50')}>
+              <input type="checkbox" disabled={disabled} checked={selected.includes(i.id)} onChange={(e) => onChange(e.target.checked ? [...selected, i.id] : selected.filter((x) => x !== i.id))} className="rounded border-ink-300 text-brand-600" />
               {render(i)}
             </label>
           </li>
@@ -315,13 +315,13 @@ export default function CategoryDetail() {
   return (
     <div className="space-y-6">
       <div>
-        <Link to={`/app/events/${event._id}/categories`} className="mb-2 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+        <Link to={`/app/events/${event._id}/categories`} className="mb-2 inline-flex items-center gap-1 text-sm text-ink-500 hover:text-ink-800">
           <ChevronLeft className="size-4" /> All categories
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold text-slate-900">{category.name}</h2>
+              <h2 className="text-lg font-semibold text-ink-900">{category.name}</h2>
               <StatusBadge kind="category" status={category.status} />
               {locked ? (
                 <Badge tone="brand">
@@ -333,7 +333,7 @@ export default function CategoryDetail() {
                 </Badge>
               )}
             </div>
-            <p className="mt-1 text-sm text-slate-500">{data.methodLabel}{category.description ? ` · ${category.description}` : ''}</p>
+            <p className="mt-1 text-sm text-ink-500">{data.methodLabel}{category.description ? ` · ${category.description}` : ''}</p>
           </div>
           {editable && (
             <div className="flex flex-wrap gap-2">
@@ -443,10 +443,10 @@ export default function CategoryDetail() {
               <tbody>
                 {data.criteria.map((c, i) => (
                   <tr key={c._id} className={cx(!c.isActive && 'opacity-50')}>
-                    <td className="text-slate-400 tabular-nums">{i + 1}</td>
+                    <td className="text-ink-400 tabular-nums">{i + 1}</td>
                     <td>
-                      <p className="font-medium text-slate-800">{c.name}</p>
-                      {c.description && <p className="text-xs text-slate-500">{c.description}</p>}
+                      <p className="font-medium text-ink-800">{c.name}</p>
+                      {c.description && <p className="text-xs text-ink-500">{c.description}</p>}
                     </td>
                     <td className="text-right font-semibold tabular-nums">{c.weight}%</td>
                     <td className="text-center tabular-nums">
@@ -526,9 +526,9 @@ export default function CategoryDetail() {
               )}
             </div>
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">Tie-breaking rules (applied in order)</p>
+              <p className="mb-2 text-sm font-medium text-ink-700">Tie-breaking rules (applied in order)</p>
               <TieRulesEditor rules={scoring.tieBreakRules} onChange={(r) => setScoring({ ...scoring, tieBreakRules: r })} criteria={data.criteria} judges={data.judges} disabled={!configEditable} usesCriteria={usesCriteria} />
-              <p className="mt-2 text-xs text-slate-500">Ties are never resolved by arbitrary order. Contestants still tied after the last rule share the rank (1, 2, 2, 4).</p>
+              <p className="mt-2 text-xs text-ink-500">Ties are never resolved by arbitrary order. Contestants still tied after the last rule share the rank (1, 2, 2, 4).</p>
             </div>
           </div>
         </Card>
@@ -586,16 +586,16 @@ export default function CategoryDetail() {
           <Card>
             <CardHeader title="Configuration history" description="Snapshot written each time scoring opens." />
             {data.versions.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-slate-500">Not yet locked.</p>
+              <p className="px-5 py-6 text-sm text-ink-500">Not yet locked.</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-ink-100">
                 {data.versions.map((v) => (
                   <li key={v._id} className="px-5 py-3 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-slate-800">Version {v.version}</span>
-                      <span className="text-xs text-slate-500">{formatDateTime(v.lockedAt)}</span>
+                      <span className="font-medium text-ink-800">Version {v.version}</span>
+                      <span className="text-xs text-ink-500">{formatDateTime(v.lockedAt)}</span>
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-ink-500">
                       Locked by {v.lockedBy?.name || '—'}
                       {v.reopenedAt && ` · Reopened ${formatDateTime(v.reopenedAt)}: ${v.reopenReason}`}
                     </p>
@@ -631,10 +631,10 @@ export default function CategoryDetail() {
               <span className="flex min-w-0 items-center gap-3">
                 <Avatar name={c.name} src={c.photo} size="sm" />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-slate-800">
+                  <span className="block truncate text-sm font-medium text-ink-800">
                     #{c.number} {c.name}
                   </span>
-                  <span className="block truncate text-xs text-slate-500">{[c.isTeam && 'Team', c.representing, c.status !== 'active' && c.status].filter(Boolean).join(' · ')}</span>
+                  <span className="block truncate text-xs text-ink-500">{[c.isTeam && 'Team', c.representing, c.status !== 'active' && c.status].filter(Boolean).join(' · ')}</span>
                 </span>
               </span>
             )}
@@ -663,8 +663,8 @@ export default function CategoryDetail() {
               <span className="flex min-w-0 items-center gap-3">
                 <Avatar name={j.user.name} size="sm" />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-slate-800">{j.user.name}</span>
-                  <span className="block truncate text-xs text-slate-500">
+                  <span className="block truncate text-sm font-medium text-ink-800">{j.user.name}</span>
+                  <span className="block truncate text-xs text-ink-500">
                     Judge {j.order}
                     {j.user.title && ` · ${j.user.title}`}
                   </span>
