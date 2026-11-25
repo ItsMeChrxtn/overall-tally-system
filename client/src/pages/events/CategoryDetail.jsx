@@ -446,7 +446,7 @@ export default function CategoryDetail() {
                     <td className="text-ink-400 tabular-nums">{i + 1}</td>
                     <td>
                       <p className="font-medium text-ink-800">{c.name}</p>
-                      {c.description && <p className="text-xs text-ink-500">{c.description}</p>}
+                      {c.description && <p className="text-xs whitespace-pre-line text-ink-500">{c.description}</p>}
                     </td>
                     <td className="text-right font-semibold tabular-nums">{c.weight}%</td>
                     <td className="text-center tabular-nums">
@@ -696,8 +696,13 @@ export default function CategoryDetail() {
             <Field label="Name" required error={critErrors.name} className="sm:col-span-2">
               <Input value={critModal.name} onChange={(e) => setCritModal({ ...critModal, name: e.target.value })} invalid={!!critErrors.name} placeholder="e.g. Stage Presence" />
             </Field>
-            <Field label="Description / scoring guide" className="sm:col-span-2">
-              <Textarea rows={2} value={critModal.description} onChange={(e) => setCritModal({ ...critModal, description: e.target.value })} />
+            <Field label="Scoring guide (shown to judges)" hint="Tell judges what earns a high or low score. Each line shows on its own line." className="sm:col-span-2">
+              <Textarea
+                rows={5}
+                value={critModal.description}
+                onChange={(e) => setCritModal({ ...critModal, description: e.target.value })}
+                placeholder={'e.g.\n27–30  Story is original, clear and moving\n21–26  Clear story with minor gaps\n15–20  Hard to follow in places\nBelow 15  No clear story'}
+              />
             </Field>
             <Field label="Weight (%)" required error={critErrors.weight} hint={needsWeights ? `Remaining: ${+(100 - totalWeight + (critModal._id && critModal.isActive ? Number(data.criteria.find((c) => c._id === critModal._id)?.weight || 0) : 0)).toFixed(4)}%` : undefined}>
               <Input type="number" min="0" max="100" step="0.01" value={critModal.weight} onChange={(e) => setCritModal({ ...critModal, weight: e.target.value })} invalid={!!critErrors.weight} />

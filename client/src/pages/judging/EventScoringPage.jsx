@@ -137,12 +137,12 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
       .map((d) => {
         const pv = preview(d.criteria, values[d.category._id]);
         const rows = d.criteria.map((c) => `<tr><td style="text-align:left;padding:3px 8px">${esc(c.name)}</td><td style="text-align:right;padding:3px 8px;font-weight:600">${esc(values[d.category._id][c.criterionId])}</td></tr>`).join('');
-        return `<p style="text-align:left;margin:12px 8px 2px;font-weight:600;color:#1d1c1a">${esc(d.category.name)}<span style="float:right;font-weight:400;color:#77726a">weighted ${num(pv.weighted)}</span></p><table style="width:100%;font-size:13px">${rows}</table>`;
+        return `<p style="text-align:left;margin:12px 8px 2px;font-weight:600;color:#0e1630">${esc(d.category.name)}<span style="float:right;font-weight:400;color:#8790a8">weighted ${num(pv.weighted)}</span></p><table style="width:100%;font-size:13px">${rows}</table>`;
       })
       .join('');
     const res = await Swal.fire({
       title: `Submit scores for #${contestant.number} ${esc(contestant.name)}?`,
-      html: `${html}<p style="margin-top:12px;font-size:12px;color:#77726a">${editable.length > 1 ? `All ${editable.length} categories will be submitted together. ` : ''}Submitted sheets are locked and can only be changed through an authorized correction.</p>`,
+      html: `${html}<p style="margin-top:12px;font-size:12px;color:#8790a8">${editable.length > 1 ? `All ${editable.length} categories will be submitted together. ` : ''}Submitted sheets are locked and can only be changed through an authorized correction.</p>`,
       showCancelButton: true,
       confirmButtonText: 'Submit & lock',
       reverseButtons: true,
@@ -229,45 +229,63 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
   let inputIndex = -1;
   inputs.current = [];
 
+  const cols = sections.length >= 3 ? 'lg:grid-cols-2 2xl:grid-cols-3' : sections.length === 2 ? 'lg:grid-cols-2' : 'max-w-3xl';
+  const DOT = { submitted: 'bg-emerald-500', partial: 'bg-gold-500', draft: 'bg-gold-500', reopened: 'bg-red-500', none: 'bg-ink-300' };
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[290px_1fr]">
-      <Card className="h-fit lg:sticky lg:top-20">
-        <CardHeader title="Contestants" description={`${submittedCount} of ${contestants.length} fully submitted`} />
-        <ul className="max-h-[60vh] divide-y divide-ink-100 overflow-y-auto">
+    <div className="space-y-5">
+      {/* Contestant picker: stays under the top bar while scrolling */}
+      <div className="sticky top-16 z-10 -mx-4 border-y border-ink-200 bg-white/90 px-4 py-3 backdrop-blur-xl sm:mx-0 sm:rounded-xl sm:border sm:shadow-sm">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[13px] text-ink-600">
+            <span className="font-semibold text-ink-900">Contestants</span> · {submittedCount} of {contestants.length} fully submitted
+          </p>
+          <div className="flex items-center gap-1.5">
+            <Button variant="secondary" size="xs" icon={ChevronLeft} disabled={idx <= 0} onClick={() => select(String(contestants[idx - 1]._id))}>
+              Prev
+            </Button>
+            <Button variant="secondary" size="xs" disabled={idx >= contestants.length - 1} onClick={() => select(String(contestants[idx + 1]._id))}>
+              Next <ChevronRight className="size-3.5" />
+            </Button>
+            {pendingTotal > 0 && (
+              <Button variant="subtle" size="xs" icon={CheckCheck} onClick={submitAll} loading={busy === 'all'}>
+                Submit all remaining
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {contestants.map((c) => {
-            const s = STATUS[statusOf(c._id)];
+            const stKey = statusOf(c._id);
+            const active = String(c._id) === selected;
             return (
-              <li key={c._id}>
-                <button type="button" onClick={() => select(String(c._id))} className={cx('flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors', String(c._id) === selected ? 'bg-brand-50' : 'hover:bg-ink-50')}>
-                  <span className="w-7 text-center text-sm text-ink-500 tabular-nums">{c.number}</span>
-                  <Avatar name={c.name} src={c.photo} size="sm" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-ink-800">{c.name}</span>
-                    <span className="block truncate text-xs text-ink-500">{c.representing || (c.isTeam ? 'Team' : '')}</span>
-                  </span>
-                  <s.icon className={cx('size-4 shrink-0', s.color)} strokeWidth={1.75} aria-label={s.label} />
-                </button>
-              </li>
+              <button
+                key={c._id}
+                type="button"
+                onClick={() => select(String(c._id))}
+                title={`${c.name} · ${STATUS[stKey].label}`}
+                className={cx(
+                  'flex shrink-0 items-center gap-2 rounded-full border py-1 pr-3 pl-1 text-left text-[13px] transition-colors',
+                  active ? 'border-brand-600 bg-brand-600 text-white shadow-md' : 'border-ink-200 bg-white text-ink-700 hover:border-brand-300 hover:bg-brand-50'
+                )}
+              >
+                <span className={cx('inline-flex size-7 items-center justify-center rounded-full text-xs font-bold tabular-nums', active ? 'bg-white text-brand-700' : 'bg-ink-100 text-ink-700')}>{c.number}</span>
+                <span className="max-w-[140px] truncate font-medium">{c.name}</span>
+                <span className={cx('size-2 shrink-0 rounded-full', DOT[stKey], active && 'ring-2 ring-white')} />
+              </button>
             );
           })}
-        </ul>
-        {pendingTotal > 0 && (
-          <div className="border-t border-ink-100 p-3">
-            <Button variant="secondary" size="sm" icon={CheckCheck} className="w-full" onClick={submitAll} loading={busy === 'all'}>
-              Submit all remaining
-            </Button>
-          </div>
-        )}
-      </Card>
+        </div>
+      </div>
 
       {contestant && (
-        <Card>
-          <div className="flex flex-wrap items-start gap-4 border-b border-ink-100 p-5">
+        <>
+          <Card className="nu-rise flex flex-wrap items-center gap-4 p-5">
             <Avatar name={contestant.name} src={contestant.photo} size="xl" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold text-ink-900">
-                  <span className="mr-1.5 font-mono font-normal text-ink-400">#{contestant.number}</span>
+                <h2 className="text-xl font-semibold text-ink-900">
+                  <span className="mr-2 text-brand-600">#{contestant.number}</span>
                   {contestant.name}
                 </h2>
                 <Badge tone={st.tone} dot>
@@ -282,104 +300,133 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
               )}
               {contestant.description && <p className="mt-2 text-sm text-ink-600">{contestant.description}</p>}
             </div>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="sm" icon={ChevronLeft} disabled={idx <= 0} onClick={() => select(String(contestants[idx - 1]._id))}>
-                Prev
-              </Button>
-              <Button variant="ghost" size="sm" disabled={idx >= contestants.length - 1} onClick={() => select(String(contestants[idx + 1]._id))}>
-                Next <ChevronRight className="size-4" />
-              </Button>
-            </div>
+            {sections.length > 1 && (
+              <p className="rounded-xl bg-brand-50 px-3.5 py-2 text-[13px] text-brand-800">
+                <span className="font-semibold">{sections.length} categories</span> side by side, scored together
+              </p>
+            )}
+          </Card>
+
+          {/* Categories side by side */}
+          <div className={cx('grid items-start gap-4', cols)}>
+            {sections.map((d) => {
+              const sheet = sheets[key(d.category._id, selected)];
+              const locked = isLocked(d);
+              const errors = errorsFor(d);
+              const pv = preview(d.criteria, values[d.category._id]);
+              const filled = d.criteria.filter((c) => (values[d.category._id]?.[c.criterionId] ?? '') !== '').length;
+              return (
+                <section key={d.category._id} id={`cat-${d.category._id}`} className="nu-rise scroll-mt-48 overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm">
+                  <div className="bg-gradient-to-br from-navy-900 to-brand-700 px-5 py-4 text-white">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-display text-[17px] leading-snug font-semibold">{d.category.name}</h3>
+                        <p className="mt-0.5 text-xs text-white/65">{d.category.methodLabel}</p>
+                      </div>
+                      {sheet?.status === 'submitted' ? (
+                        <Badge tone="green">
+                          <Lock className="size-3" /> Submitted
+                        </Badge>
+                      ) : !d.category.scoringOpen ? (
+                        <Badge>
+                          <Lock className="size-3" /> Closed
+                        </Badge>
+                      ) : sheet?.status === 'reopened' ? (
+                        <Badge tone="red">Reopened</Badge>
+                      ) : (
+                        <Badge tone="gold">
+                          {filled}/{d.criteria.length} scored
+                        </Badge>
+                      )}
+                    </div>
+                    {d.category.instructions && <p className="mt-3 rounded-lg bg-white/10 px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line text-white/85">{d.category.instructions}</p>}
+                  </div>
+
+                  {sheet?.status === 'reopened' && (
+                    <div className="px-5 pt-4">
+                      <Alert tone="red" icon={RotateCcw} title="Reopened for correction">
+                        {sheet.reopenReason}
+                      </Alert>
+                    </div>
+                  )}
+                  {sheet?.status === 'submitted' && <p className="border-b border-ink-100 bg-emerald-50 px-5 py-2 text-xs text-emerald-800">Submitted {formatDateTime(sheet.submittedAt)}. Ask the event administrator if a correction is needed.</p>}
+
+                  <ol className="divide-y divide-ink-100">
+                    {d.criteria.map((c, n) => {
+                      const err = errors[c.criterionId];
+                      const i = locked ? null : ++inputIndex;
+                      return (
+                        <li key={c.criterionId} className="px-5 py-4">
+                          <div className="flex items-start gap-3">
+                            <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">{n + 1}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-ink-900">{c.name}</p>
+                              <p className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-ink-500">
+                                <span className="font-semibold text-gold-700">{c.weight}%</span>
+                                <span>
+                                  Score {c.minScore}–{c.maxScore}
+                                  {c.decimalPlaces ? ` · up to ${c.decimalPlaces} decimal${c.decimalPlaces > 1 ? 's' : ''}` : ' · whole numbers'}
+                                </span>
+                              </p>
+                            </div>
+                            <div className="w-28 shrink-0">
+                              <Input
+                                ref={(el) => {
+                                  if (i !== null) inputs.current[i] = el;
+                                }}
+                                type="number"
+                                inputMode="decimal"
+                                min={c.minScore}
+                                max={c.maxScore}
+                                step={c.decimalPlaces ? 1 / 10 ** c.decimalPlaces : 1}
+                                disabled={locked}
+                                value={values[d.category._id]?.[c.criterionId] ?? ''}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setValues((all) => ({ ...all, [d.category._id]: { ...all[d.category._id], [c.criterionId]: v } }));
+                                  setDirty((s) => new Set(s).add(d.category._id));
+                                }}
+                                onKeyDown={(e) => i !== null && onKey(e, i)}
+                                invalid={!!err}
+                                placeholder={`/${c.maxScore}`}
+                                aria-label={`${c.name} score`}
+                                className="h-12 text-center font-display text-xl font-semibold tabular-nums"
+                              />
+                              {err && <p className="mt-1 text-center text-[11px] text-red-700">{err}</p>}
+                            </div>
+                          </div>
+                          <div className={cx('mt-3 ml-9 rounded-lg border px-3.5 py-2.5 text-[13px] leading-relaxed', c.description ? 'border-gold-100 bg-gold-50/70 text-ink-700' : 'border-dashed border-ink-200 text-ink-400')}>
+                            <p className="mb-0.5 text-[11px] font-semibold tracking-wide text-gold-700 uppercase">How to score</p>
+                            {c.description ? <p className="whitespace-pre-line">{c.description}</p> : <p>No scoring guide was given for this criterion.</p>}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+
+                  <div className="flex items-center justify-between gap-3 border-t border-ink-200 bg-ink-50 px-5 py-3 text-sm">
+                    <span className="text-ink-500">Preview</span>
+                    <span className="tabular-nums">
+                      Total <span className="font-display text-base font-semibold text-ink-900">{num(pv.total)}</span>
+                      <span className="mx-2 text-ink-300">|</span>
+                      Weighted <span className="font-display text-base font-semibold text-brand-700">{num(pv.weighted)}</span>
+                    </span>
+                  </div>
+                </section>
+              );
+            })}
           </div>
 
-          {sections.map((d) => {
-            const sheet = sheets[key(d.category._id, selected)];
-            const locked = isLocked(d);
-            const errors = errorsFor(d);
-            const pv = preview(d.criteria, values[d.category._id]);
-            return (
-              <section key={d.category._id} id={`cat-${d.category._id}`} className="scroll-mt-20 border-b border-ink-200 last:border-b-0">
-                <div className="flex flex-wrap items-center justify-between gap-2 bg-ink-50 px-5 py-2.5">
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-ink-900">{d.category.name}</h3>
-                    <p className="text-xs text-ink-500">{d.category.methodLabel}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-ink-500 tabular-nums">
-                      {num(pv.total)} · w {num(pv.weighted)}
-                    </span>
-                    {sheet?.status === 'submitted' ? (
-                      <Badge tone="green">
-                        <Lock className="size-3" /> Submitted
-                      </Badge>
-                    ) : !d.category.scoringOpen ? (
-                      <Badge>
-                        <Lock className="size-3" /> Scoring closed
-                      </Badge>
-                    ) : sheet?.status === 'reopened' ? (
-                      <Badge tone="red">Reopened</Badge>
-                    ) : sheet ? (
-                      <Badge tone="amber">Draft</Badge>
-                    ) : null}
-                  </div>
-                </div>
-                {d.category.instructions && <p className="border-b border-ink-100 px-5 py-2 text-xs text-ink-600">{d.category.instructions}</p>}
-                {sheet?.status === 'reopened' && (
-                  <div className="px-5 pt-4">
-                    <Alert tone="red" icon={RotateCcw} title="Reopened for correction">
-                      {sheet.reopenReason}
-                    </Alert>
-                  </div>
-                )}
-                {sheet?.status === 'submitted' && <p className="px-5 pt-3 text-xs text-ink-500">Submitted {formatDateTime(sheet.submittedAt)}. Contact the event administrator if a correction is needed.</p>}
-                <div className="divide-y divide-ink-100">
-                  {d.criteria.map((c) => {
-                    const err = errors[c.criterionId];
-                    const i = locked ? null : ++inputIndex;
-                    return (
-                      <div key={c.criterionId} className="grid items-center gap-3 px-5 py-3.5 sm:grid-cols-[1fr_150px]">
-                        <div>
-                          <p className="font-medium text-ink-800">
-                            {c.name} <span className="ml-1 text-xs font-normal text-ink-500">{c.weight}%</span>
-                          </p>
-                          {c.description && <p className="text-xs text-ink-500">{c.description}</p>}
-                        </div>
-                        <div>
-                          <Input
-                            ref={(el) => {
-                              if (i !== null) inputs.current[i] = el;
-                            }}
-                            type="number"
-                            inputMode="decimal"
-                            min={c.minScore}
-                            max={c.maxScore}
-                            step={c.decimalPlaces ? 1 / 10 ** c.decimalPlaces : 1}
-                            disabled={locked}
-                            value={values[d.category._id]?.[c.criterionId] ?? ''}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setValues((all) => ({ ...all, [d.category._id]: { ...all[d.category._id], [c.criterionId]: v } }));
-                              setDirty((s) => new Set(s).add(d.category._id));
-                            }}
-                            onKeyDown={(e) => i !== null && onKey(e, i)}
-                            invalid={!!err}
-                            placeholder={`${c.minScore} – ${c.maxScore}`}
-                            className="h-10 text-right text-lg font-medium tabular-nums"
-                          />
-                          <p className={cx('mt-1 text-right text-[11px]', err ? 'text-red-700' : 'text-ink-400')}>{err || `Range ${c.minScore}–${c.maxScore}${c.decimalPlaces ? `, ${c.decimalPlaces} dp` : ''}`}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
-
           {editable.length > 0 && (
-            <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-b-lg border-t border-ink-200 bg-white/95 px-5 py-3.5 backdrop-blur-sm">
-              <p className="text-xs text-ink-500">
-                {editable.length > 1 ? `${editable.length} categories will be saved and submitted together.` : 'Previews only; official scores are computed by the server.'}
+            <div className="sticky bottom-3 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 bg-white/95 px-5 py-3.5 shadow-xl backdrop-blur-xl">
+              <p className="text-[13px] text-ink-600">
+                {editable.length > 1 ? (
+                  <>
+                    <span className="font-semibold text-ink-900">{editable.length} categories</span> will be saved and submitted together for #{contestant.number}.
+                  </>
+                ) : (
+                  'Totals are previews; official scores are computed by the server.'
+                )}
               </p>
               <div className="flex gap-2">
                 <Button variant="secondary" icon={Save} onClick={() => saveDraft()} loading={busy === 'save'} disabled={!dirty.size}>
@@ -391,7 +438,7 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
               </div>
             </div>
           )}
-        </Card>
+        </>
       )}
     </div>
   );
