@@ -80,6 +80,7 @@ router.get('/events/:eventId/assignments', authorize(...STAFF), assignments.list
 router.post('/events/:eventId/assignments', authorize(...ADMINS), assignments.createAssignment);
 router.post('/events/:eventId/encode-judges', authorize(...ADMINS), assignments.createEncodeJudge);
 router.patch('/assignments/:id', authorize(...ADMINS), assignments.updateAssignment);
+router.put('/assignments/:id/judge-login', authorize(...ADMINS), assignments.setJudgeLogin);
 router.delete('/assignments/:id', authorize(...ADMINS), assignments.deleteAssignment);
 
 // ---------- Categories, criteria, scoring configuration ----------

@@ -5,6 +5,7 @@ import Contestant from '../models/Contestant.js';
 import Event from '../models/Event.js';
 import EventAssignment from '../models/EventAssignment.js';
 import ScoreSheet from '../models/ScoreSheet.js';
+import User from '../models/User.js';
 import ApiError from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { decimalsOf, objectId, parse } from '../utils/validation.js';
@@ -337,6 +338,10 @@ async function encodeContext(req) {
   assertScoringOpen(category, config);
   const judge = config.judges.find((j) => String(j.userId) === String(req.params.judgeId));
   if (!judge) throw ApiError.badRequest('That judge is not on the locked panel for this category.');
+  // Judges with their own sign-in encode their own scores; turn their sign-in off to encode for them.
+  if (await User.exists({ _id: judge.userId, loginEnabled: { $ne: false } })) {
+    throw ApiError.forbidden(`${judge.name} has their own judge sign-in and encodes their own scores.`, 'JUDGE_SELF_SCORING');
+  }
   return { category, config, judgeId: judge.userId, judgeName: judge.name, encoded: true };
 }
 
@@ -344,10 +349,12 @@ export const getEncodeCategory = asyncHandler(async (req, res) => {
   const { category, event, config } = await loadEncodeCategory(req, req.params.id);
   const open = category.configLocked && config.locked;
   const contestantIds = config.contestants.map((c) => c.contestantId);
-  const [contestants, sheets] = await Promise.all([
+  const [contestants, sheets, selfScoring] = await Promise.all([
     Contestant.find({ _id: { $in: contestantIds } }, 'number name isTeam teamName representing photo').lean(),
     open ? ScoreSheet.find({ category: category._id }) : [],
+    open ? User.find({ _id: { $in: config.judges.map((j) => j.userId) }, loginEnabled: { $ne: false } }).distinct('_id') : [],
   ]);
+  const selfIds = new Set(selfScoring.map(String));
   res.json({
     success: true,
     event: { _id: event._id, name: event.name },
@@ -363,7 +370,7 @@ export const getEncodeCategory = asyncHandler(async (req, res) => {
       usesCriteria: methodUsesCriteria(config.scoringMethod),
     },
     criteria: open ? config.criteria : [],
-    judges: open ? [...config.judges].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [],
+    judges: open ? [...config.judges].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((j) => ({ ...j, selfScoring: selfIds.has(String(j.userId)) })) : [],
     contestants: open
       ? config.contestants
           .map((c) => ({ ...contestants.find((x) => String(x._id) === String(c.contestantId)), _id: c.contestantId, number: c.number, name: c.name }))

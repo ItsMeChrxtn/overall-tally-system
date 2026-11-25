@@ -1,12 +1,13 @@
 import { randomBytes } from 'crypto';
 import { z } from 'zod';
 import User from '../models/User.js';
+import Setting from '../models/Setting.js';
 import Category from '../models/Category.js';
 import EventAssignment from '../models/EventAssignment.js';
 import ScoreSheet from '../models/ScoreSheet.js';
 import ApiError from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { objectId, parse } from '../utils/validation.js';
+import { objectId, parse, passwordSchema } from '../utils/validation.js';
 import { assertNotArchived, requireEventAccess } from '../services/accessService.js';
 import { audit } from '../services/auditService.js';
 import { notify } from '../services/notificationService.js';
@@ -81,9 +82,26 @@ export const createAssignment = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, assignment });
 });
 
+/** Parses optional judge sign-in credentials ({ email, password }); both or neither. */
+async function parseJudgeLogin(body) {
+  const settings = await Setting.getGlobal();
+  const data = parse(
+    z.object({
+      email: z.string().trim().toLowerCase().email("Enter a valid email for the judge's sign-in").optional().or(z.literal('')),
+      password: passwordSchema(settings.passwordMinLength).optional().or(z.literal('')),
+    }),
+    { email: body?.email, password: body?.password }
+  );
+  if (!data.email && !data.password) return null;
+  if (!data.email) throw ApiError.badRequest('Enter the email the judge will sign in with.');
+  if (!data.password) throw ApiError.badRequest('Set a password for the judge.');
+  return data;
+}
+
 /**
- * Adds a name-only judge to the event: creates a judge account that cannot sign in
- * (the event admin encodes this judge's paper score sheets) and assigns it in one step.
+ * Adds a judge to the event in one step. With `email` + `password` the judge gets their own
+ * sign-in and scores their assigned categories themselves; without them the judge is
+ * name-only (cannot sign in) and the event admin encodes their paper score sheets.
  */
 export const createEncodeJudge = asyncHandler(async (req, res) => {
   const { event } = await requireEventAccess(req.user, req.params.eventId, 'manage');
@@ -98,21 +116,23 @@ export const createEncodeJudge = asyncHandler(async (req, res) => {
     }),
     req.body
   );
+  const login = await parseJudgeLogin(req.body);
   const categories = await Category.find({ _id: { $in: data.categories }, event: event._id });
   if (categories.length !== data.categories.length) throw ApiError.badRequest('One or more categories do not belong to this event.');
   await assertCategoriesEditable(event._id, data.categories, 'add');
+  if (login && (await User.exists({ email: login.email }))) throw ApiError.conflict('An account with this email already exists.', 'DUPLICATE');
 
   const user = new User({
     name: data.name,
     title: data.title,
     affiliation: data.affiliation,
-    // Placeholder address: unique, never used to sign in or receive mail
-    email: `judge.${randomBytes(6).toString('hex')}@encode.local`,
+    // Name-only judges get a placeholder address: unique, never used to sign in or receive mail
+    email: login ? login.email : `judge.${randomBytes(6).toString('hex')}@encode.local`,
     role: ROLES.JUDGE,
-    loginEnabled: false,
+    loginEnabled: !!login,
     createdBy: req.user._id,
   });
-  await user.setPassword(randomBytes(24).toString('base64url'));
+  await user.setPassword(login ? login.password : randomBytes(24).toString('base64url'));
   await user.save();
 
   const order = data.order ?? (await EventAssignment.countDocuments({ event: event._id, role: ROLES.JUDGE })) + 1;
@@ -121,13 +141,61 @@ export const createEncodeJudge = asyncHandler(async (req, res) => {
     action: 'assignment.created',
     entityType: 'EventAssignment',
     entityId: assignment._id,
-    entityLabel: `${user.name} as judge (encoded)`,
+    entityLabel: `${user.name} as judge${login ? '' : ' (encoded)'}`,
     event: event._id,
-    after: { user: user.name, role: ROLES.JUDGE, encodeOnly: true, seat: order, categories: categories.map((c) => c.name) },
+    after: { user: user.name, role: ROLES.JUDGE, encodeOnly: !login, ...(login ? { email: login.email } : {}), seat: order, categories: categories.map((c) => c.name) },
   });
+  if (login) await notify(user._id, { title: 'New event assignment', message: `You were assigned to judge "${event.name}".`, link: '/app/judging', event: event._id });
   emitToEvent(event._id, 'assignments:updated');
   await assignment.populate([{ path: 'user', select: 'name email role status title loginEnabled' }, { path: 'categories', select: 'name' }]);
   res.status(201).json({ success: true, assignment });
+});
+
+/**
+ * Gives a judge of this event their own sign-in (or changes it), or turns it off so the
+ * event admin encodes their scores instead. Body: { email, password } or { enabled: false }.
+ */
+export const setJudgeLogin = asyncHandler(async (req, res) => {
+  const assignment = await EventAssignment.findById(req.params.id);
+  if (!assignment) throw ApiError.notFound('Assignment not found.');
+  if (assignment.role !== ROLES.JUDGE) throw ApiError.badRequest('Only judges can be given a judge sign-in here.');
+  const { event } = await requireEventAccess(req.user, assignment.event, 'manage');
+  assertNotArchived(event);
+  const user = await User.findById(assignment.user).select('+tokenVersion');
+  if (!user || user.role !== ROLES.JUDGE) throw ApiError.notFound('Judge account not found.');
+
+  const before = { loginEnabled: user.loginEnabled !== false, email: user.email };
+  if (req.body?.enabled === false) {
+    user.loginEnabled = false;
+  } else {
+    const login = await parseJudgeLogin(req.body);
+    if (!login) throw ApiError.badRequest('Enter the email and password the judge will sign in with.');
+    if (login.email !== user.email && (await User.exists({ email: login.email, _id: { $ne: user._id } }))) {
+      throw ApiError.conflict('An account with this email already exists.', 'DUPLICATE');
+    }
+    user.email = login.email;
+    await user.setPassword(login.password);
+    user.loginEnabled = true;
+    user.status = 'active';
+    user.mustChangePassword = false;
+  }
+  // Ends any session the judge already has open
+  user.tokenVersion = (user.tokenVersion || 0) + 1;
+  await user.save();
+  await audit(req, {
+    action: user.loginEnabled ? 'judge.login_set' : 'judge.login_disabled',
+    entityType: 'User',
+    entityId: user._id,
+    entityLabel: user.name,
+    event: event._id,
+    before,
+    after: { loginEnabled: user.loginEnabled, email: user.loginEnabled ? user.email : undefined },
+  });
+  if (user.loginEnabled && !before.loginEnabled) {
+    await notify(user._id, { title: 'Judge sign-in ready', message: `You can now score your assigned categories in "${event.name}".`, link: '/app/judging', event: event._id });
+  }
+  emitToEvent(event._id, 'assignments:updated');
+  res.json({ success: true, user: user.toSafeObject() });
 });
 
 export const updateAssignment = asyncHandler(async (req, res) => {

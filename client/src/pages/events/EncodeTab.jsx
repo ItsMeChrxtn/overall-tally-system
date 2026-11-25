@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, CircleDashed, Info, Keyboard, Lock, RotateCcw, Save, Send } from 'lucide-react';
+import { CheckCircle2, CircleDashed, Info, Keyboard, Lock, RotateCcw, Save, Send, UserCheck } from 'lucide-react';
 import api from '../../api/client';
 import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, ProgressBar, Select, TableSkeleton, cx } from '../../components/ui';
 import { decimalsOf, num } from '../../lib/format';
@@ -316,7 +316,13 @@ export default function EncodeTab() {
     setData(null);
     load();
   }, [load]);
-  useEventSocket(event._id, { 'category:updated': (p) => p?.categoryId === categoryId && load(), 'sheet:reopened': (p) => p?.categoryId === categoryId && load() });
+  useEventSocket(event._id, {
+    'category:updated': (p) => p?.categoryId === categoryId && load(),
+    'sheet:reopened': (p) => p?.categoryId === categoryId && load(),
+    'assignments:updated': load,
+    // Judges scoring on their own devices: keep their progress current
+    'sheet:submitted': (p) => p?.categoryId === categoryId && data?.judges?.some((j) => j.selfScoring && String(j.userId) === String(p.judgeId)) && load(),
+  });
 
   const judges = data?.judges || [];
   const judge = judges.find((j) => String(j.userId) === judgeId) || judges[0];
@@ -355,7 +361,10 @@ export default function EncodeTab() {
                     onClick={() => setParams({ category: categoryId, judge: j.userId })}
                     className={cx('min-w-40 rounded-lg border px-3 py-2 text-left transition-colors', active ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500' : 'border-slate-200 hover:bg-slate-50')}
                   >
-                    <span className="block text-xs text-slate-500">Seat {j.order}</span>
+                    <span className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                      Seat {j.order}
+                      {j.selfScoring && <Badge tone="green">Self-scoring</Badge>}
+                    </span>
                     <span className="block truncate text-sm font-medium text-slate-800">{j.name}</span>
                     <span className="mt-1 flex items-center gap-2">
                       <ProgressBar value={done} max={data.contestants.length || 1} className="flex-1" />
@@ -394,7 +403,12 @@ export default function EncodeTab() {
         </Alert>
       ) : null}
 
-      {data?.category?.configLocked && judge && <JudgeSheet key={`${categoryId}:${judge.userId}`} data={data} judge={judge} reload={load} />}
+      {data?.category?.configLocked && judge?.selfScoring && (
+        <Alert tone="green" icon={UserCheck} title={`${judge.name} scores their own sheets`}>
+          This judge has their own sign-in and enters their scores per criterion themselves. Their progress above updates as they submit. To encode for them instead, turn off their sign-in in the Judges tab.
+        </Alert>
+      )}
+      {data?.category?.configLocked && judge && !judge.selfScoring && <JudgeSheet key={`${categoryId}:${judge.userId}`} data={data} judge={judge} reload={load} />}
     </div>
   );
 }
