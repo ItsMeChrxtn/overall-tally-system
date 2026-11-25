@@ -31,6 +31,7 @@ import SettingsPage from './pages/settings/SettingsPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import JudgeHomePage from './pages/judging/JudgeHomePage';
 import ScoringPage from './pages/judging/ScoringPage';
+import EventScoringPage from './pages/judging/EventScoringPage';
 import JudgeHistoryPage from './pages/judging/JudgeHistoryPage';
 import NotFound from './pages/NotFound';
 
@@ -90,6 +91,7 @@ export default function App() {
 
           <Route path="judging" element={<ProtectedRoute roles={['judge']}><JudgeHomePage /></ProtectedRoute>} />
           <Route path="judging/history" element={<ProtectedRoute roles={['judge']}><JudgeHistoryPage /></ProtectedRoute>} />
+          <Route path="judging/event/:eventId" element={<ProtectedRoute roles={['judge']}><EventScoringPage /></ProtectedRoute>} />
           <Route path="judging/:categoryId" element={<ProtectedRoute roles={['judge']}><ScoringPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound inApp />} />
         </Route>

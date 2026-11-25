@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CalendarClock, CheckCircle2, ChevronRight, ClipboardCheck, Clock3, Lock, MapPin } from 'lucide-react';
+import { Link, Navigate } from 'react-router-dom';
+import { ArrowRight, CalendarClock, CheckCircle2, ClipboardCheck, Clock3, Lock, MapPin } from 'lucide-react';
 import api from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
-import { Badge, Card, CardHeader, EmptyState, PageHeader, PageSkeleton, ProgressBar, StatCard } from '../../components/ui';
+import { Badge, Card, CardHeader, EmptyState, PageHeader, PageSkeleton, ProgressBar, StatCard, StatGroup } from '../../components/ui';
 import { eventTypeLabel, formatDate } from '../../lib/format';
 import { showError } from '../../lib/alerts';
 import { useSocketEvent } from '../../lib/socket';
@@ -28,16 +28,18 @@ export default function JudgeHomePage() {
   useSocketEvent('notification', load);
 
   if (!items || !dash) return <PageSkeleton />;
+  // One event: nothing to choose, go straight to the score sheet
+  if (items.length === 1) return <Navigate to={`/app/judging/event/${items[0].event._id}`} replace />;
 
   return (
     <div>
-      <PageHeader eyebrow="Judge portal" title={`Welcome, ${user.name}`} description="Choose a category to score. You only see the events and categories assigned to you." />
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <PageHeader eyebrow="Judge" title={user.name} description="Each event opens as one score sheet covering all of your categories." />
+      <StatGroup className="mb-6 grid-cols-2 xl:grid-cols-4">
         <StatCard label="Assigned events" value={dash.stats.assignedEvents} icon={CalendarClock} />
-        <StatCard label="Open categories" value={dash.stats.openCategories} icon={ClipboardCheck} tone="violet" />
+        <StatCard label="Open categories" value={dash.stats.openCategories} icon={ClipboardCheck} tone="brand" />
         <StatCard label="Pending score sheets" value={dash.stats.pendingSheets} icon={Clock3} tone="amber" />
         <StatCard label="Completed evaluations" value={dash.stats.completedEvaluations} icon={CheckCircle2} tone="green" />
-      </div>
+      </StatGroup>
 
       {items.length === 0 ? (
         <Card>
@@ -60,40 +62,46 @@ export default function JudgeHomePage() {
                     )}
                   </span>
                 }
-                actions={<Badge tone="brand">Judge {seat}</Badge>}
+                actions={
+                  <>
+                    <Badge tone="brand">Judge {seat}</Badge>
+                    <Link to={`/app/judging/event/${event._id}`} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-brand-600 px-3 text-[13px] font-medium text-white hover:bg-brand-700">
+                      Open score sheet <ArrowRight className="size-4" />
+                    </Link>
+                  </>
+                }
               />
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-ink-100">
                 {categories.map((c) => {
                   const open = c.configLocked && c.status === 'scoring';
                   const done = c.submitted >= c.contestants && c.contestants > 0;
                   return (
                     <li key={c._id}>
-                      <Link to={`/app/judging/${c._id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50">
+                      <Link to={`/app/judging/event/${event._id}?category=${c._id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-ink-50">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium text-slate-900">{c.name}</p>
+                            <p className="font-medium text-ink-900">{c.name}</p>
                             {!c.configLocked ? (
                               <Badge>
                                 <Lock className="size-3" /> Not open yet
                               </Badge>
                             ) : open ? (
-                              done ? <Badge tone="green">Completed</Badge> : <Badge tone="violet" dot>Scoring open</Badge>
+                              done ? <Badge tone="green">Completed</Badge> : <Badge tone="brand" dot>Scoring open</Badge>
                             ) : (
                               <Badge tone="blue">Scoring closed</Badge>
                             )}
                             {c.drafts > 0 && <Badge tone="amber">{c.drafts} draft{c.drafts > 1 ? 's' : ''}</Badge>}
                           </div>
-                          <p className="mt-0.5 text-xs text-slate-500">{c.methodLabel}</p>
+                          <p className="mt-0.5 text-xs text-ink-500">{c.methodLabel}</p>
                           {c.configLocked && (
                             <div className="mt-2 flex max-w-sm items-center gap-2">
                               <ProgressBar value={c.submitted} max={c.contestants} className="flex-1" />
-                              <span className="text-xs text-slate-500 tabular-nums">
+                              <span className="text-xs text-ink-500 tabular-nums">
                                 {c.submitted}/{c.contestants}
                               </span>
                             </div>
                           )}
                         </div>
-                        <ChevronRight className="size-5 text-slate-400" />
                       </Link>
                     </li>
                   );
