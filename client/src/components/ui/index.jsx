@@ -11,13 +11,13 @@ export { cx };
 // ------------------------------------------------------------------ Buttons
 const VARIANTS = {
   primary: 'btn-nu text-white disabled:opacity-50',
-  secondary: 'bg-white text-ink-800 border border-ink-300 shadow-sm hover:border-ink-400 hover:bg-ink-50 disabled:text-ink-400 disabled:hover:border-ink-300',
-  danger: 'bg-gradient-to-b from-red-500 to-red-700 border border-red-800 text-white hover:from-red-600 hover:to-red-700 disabled:opacity-50',
-  success: 'bg-gradient-to-b from-emerald-500 to-emerald-700 border border-emerald-800 text-white hover:from-emerald-600 disabled:opacity-50',
+  secondary: 'bg-white text-ink-800 border border-ink-300 hover:border-ink-400 hover:bg-ink-50 disabled:text-ink-400 disabled:hover:border-ink-300',
+  danger: 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50',
+  success: 'bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50',
   ghost: 'text-ink-600 hover:bg-ink-100 hover:text-ink-900 disabled:text-ink-300',
   subtle: 'bg-brand-50 text-brand-700 hover:bg-brand-100 disabled:text-brand-300',
 };
-const SIZES = { xs: 'h-7 px-2.5 text-xs gap-1 rounded-lg', sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-lg', md: 'h-10 px-4 text-sm gap-2 rounded-md', lg: 'h-11 px-5 text-sm gap-2 rounded-md' };
+const SIZES = { xs: 'h-7 px-2 text-xs gap-1 rounded-md', sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-md', md: 'h-9 px-3.5 text-sm gap-2 rounded-md', lg: 'h-10 px-4 text-sm gap-2 rounded-md' };
 
 export const Button = forwardRef(function Button({ variant = 'primary', size = 'md', loading = false, icon: Icon, className, children, disabled, type = 'button', ...props }, ref) {
   return (
@@ -26,7 +26,7 @@ export const Button = forwardRef(function Button({ variant = 'primary', size = '
       type={type}
       disabled={disabled || loading}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center font-semibold whitespace-nowrap transition-all active:scale-[0.97] focus-visible:ring-3 focus-visible:ring-brand-600/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:active:scale-100',
+        'inline-flex shrink-0 items-center justify-center font-medium whitespace-nowrap transition-colors focus-visible:ring-3 focus-visible:ring-brand-600/25 focus-visible:outline-none disabled:cursor-not-allowed',
         VARIANTS[variant],
         SIZES[size],
         className
@@ -67,12 +67,12 @@ export function Field({ label, hint, error, required, children, className, htmlF
 }
 
 export const Input = forwardRef(function Input({ className, invalid, ...props }, ref) {
-  return <input ref={ref} className={cx(control, 'h-10', invalid && 'border-red-500 focus:border-red-600 focus:ring-red-600/12', className)} {...props} />;
+  return <input ref={ref} className={cx(control, 'h-9', invalid && 'border-red-500 focus:border-red-600 focus:ring-red-600/12', className)} {...props} />;
 });
 
 export const Select = forwardRef(function Select({ className, children, ...props }, ref) {
   return (
-    <select ref={ref} className={cx(control, 'h-10 pr-8', className)} {...props}>
+    <select ref={ref} className={cx(control, 'h-9 pr-8', className)} {...props}>
       {children}
     </select>
   );
@@ -128,7 +128,7 @@ const TONES = {
 };
 export function Badge({ tone = 'gray', children, className, dot }) {
   return (
-    <span className={cx('inline-flex items-center gap-1.5 rounded-full border px-2 py-px text-[11.5px] leading-[18px] font-semibold whitespace-nowrap', TONES[tone], className)}>
+    <span className={cx('inline-flex items-center gap-1.5 rounded-full border px-2 py-px text-[11px] leading-[18px] font-medium whitespace-nowrap', TONES[tone], className)}>
       {dot && <span className="size-1.5 rounded-full bg-current" />}
       {children}
     </span>
@@ -143,7 +143,7 @@ export function CardHeader({ title, description, actions, className }) {
   return (
     <div className={cx('flex flex-wrap items-start justify-between gap-3 border-b border-ink-100 px-5 py-4', className)}>
       <div className="min-w-0">
-        <h3 className="font-display text-[15px] font-semibold text-ink-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-ink-900">{title}</h3>
         {description && <p className="mt-0.5 text-xs text-ink-500">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -153,11 +153,11 @@ export function CardHeader({ title, description, actions, className }) {
 
 export function PageHeader({ title, description, actions, eyebrow }) {
   return (
-    <div className="nu-rise mb-6 flex flex-wrap items-end justify-between gap-4 pt-1">
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        {eyebrow && <div className="label-caps mb-1.5 text-brand-600">{eyebrow}</div>}
-        <h1 className="text-[26px] leading-tight font-semibold text-ink-900 sm:text-[30px]">{title}</h1>
-        {description && <p className="mt-1.5 max-w-3xl text-sm text-ink-500">{description}</p>}
+        {eyebrow && <div className="mb-1 text-xs font-medium text-brand-600">{eyebrow}</div>}
+        <h1 className="text-xl font-semibold text-ink-900">{title}</h1>
+        {description && <p className="mt-1 max-w-3xl text-sm text-ink-500">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -166,7 +166,7 @@ export function PageHeader({ title, description, actions, eyebrow }) {
 
 /** Grid of stat cards. Give it the grid columns via className. */
 export function StatGroup({ children, className }) {
-  return <div className={cx('nu-rise grid gap-4', className)}>{children}</div>;
+  return <div className={cx('grid gap-3', className)}>{children}</div>;
 }
 
 const STAT_TONE = {
@@ -181,15 +181,15 @@ const STAT_TONE = {
 };
 export function StatCard({ label, value, icon: Icon, hint, tone = 'brand' }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-ink-200 bg-white px-5 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3.5">
       {Icon && (
-        <span className={cx('inline-flex size-11 shrink-0 items-center justify-center rounded-xl', STAT_TONE[tone] || STAT_TONE.brand)}>
-          <Icon className="size-5" strokeWidth={2} />
+        <span className={cx('inline-flex size-9 shrink-0 items-center justify-center rounded-lg', STAT_TONE[tone] || STAT_TONE.brand)}>
+          <Icon className="size-[18px]" />
         </span>
       )}
       <div className="min-w-0">
-        <p className="truncate text-[13px] text-ink-500">{label}</p>
-        <p className="font-display text-[28px] leading-tight font-semibold tracking-tight text-ink-900 tabular-nums">{value ?? '—'}</p>
+        <p className="truncate text-xs text-ink-500">{label}</p>
+        <p className="text-xl leading-tight font-semibold text-ink-900 tabular-nums">{value ?? '—'}</p>
         {hint && <p className="text-xs text-ink-500">{hint}</p>}
       </div>
     </div>
@@ -218,10 +218,8 @@ export function Avatar({ name, src, size = 'md', className }) {
 export function EmptyState({ icon: Icon = Inbox, title, description, action, className }) {
   return (
     <div className={cx('flex flex-col items-center justify-center px-6 py-12 text-center', className)}>
-      <span className="mb-3 inline-flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-        <Icon className="size-5" />
-      </span>
-      <p className="font-display text-[15px] font-semibold text-ink-900">{title}</p>
+      <Icon className="mb-2.5 size-6 text-ink-300" />
+      <p className="text-sm font-medium text-ink-800">{title}</p>
       {description && <p className="mt-1 max-w-md text-sm text-ink-500">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -284,17 +282,17 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   const width = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size];
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div role="dialog" aria-modal="true" className={cx('nu-rise relative flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-white shadow-xl sm:rounded-2xl', width)}>
+      <div className="absolute inset-0 bg-ink-900/40" onClick={onClose} />
+      <div role="dialog" aria-modal="true" className={cx('relative flex max-h-[92vh] w-full flex-col rounded-t-xl bg-white shadow-xl sm:rounded-xl', width)}>
         <div className="flex items-start justify-between gap-4 border-b border-ink-100 px-5 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-ink-900">{title}</h2>
+            <h2 className="text-base font-semibold text-ink-900">{title}</h2>
             {description && <p className="mt-0.5 text-sm text-ink-500">{description}</p>}
           </div>
           <IconButton icon={X} label="Close" onClick={onClose} className="-mt-1 -mr-2" />
         </div>
         <div className="overflow-y-auto px-5 py-4">{children}</div>
-        {footer && <div className="flex flex-wrap justify-end gap-2 rounded-b-2xl border-t border-ink-100 bg-ink-50 px-5 py-3.5">{footer}</div>}
+        {footer && <div className="flex flex-wrap justify-end gap-2 rounded-b-xl border-t border-ink-100 bg-ink-50 px-5 py-3">{footer}</div>}
       </div>
     </div>,
     document.body
@@ -312,7 +310,7 @@ export function TabNav({ items }) {
             to={to}
             end={end}
             className={({ isActive }) =>
-              cx('-mb-px inline-flex items-center gap-1.5 border-b-2 py-2.5 text-sm transition-colors', isActive ? 'border-brand-600 font-semibold text-brand-700' : 'border-transparent font-medium text-ink-500 hover:text-ink-900')
+              cx('-mb-px inline-flex items-center gap-1.5 border-b-2 py-2.5 text-sm transition-colors', isActive ? 'border-brand-600 font-medium text-brand-700' : 'border-transparent text-ink-500 hover:text-ink-900')
             }
           >
             {Icon && <Icon className="size-4" strokeWidth={1.75} />}
@@ -327,13 +325,13 @@ export function TabNav({ items }) {
 
 export function SegmentedControl({ value, onChange, options }) {
   return (
-    <div className="inline-flex rounded-lg bg-ink-100 p-1">
+    <div className="inline-flex rounded-lg bg-ink-100 p-0.5">
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={cx('rounded-md px-3 py-1.5 text-xs font-semibold transition-colors', value === o.value ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-500 hover:text-ink-900')}
+          className={cx('rounded-md px-3 py-1 text-xs font-medium transition-colors', value === o.value ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-500 hover:text-ink-900')}
         >
           {o.label}
         </button>
@@ -351,7 +349,7 @@ export function Alert({ tone = 'amber', icon: Icon, title, children, className }
     gray: 'border-ink-200 bg-ink-50 text-ink-700',
   };
   return (
-    <div className={cx('flex gap-3 rounded-xl border px-4 py-3 text-sm', map[tone], className)}>
+    <div className={cx('flex gap-2.5 rounded-lg border px-3.5 py-2.5 text-sm', map[tone], className)}>
       {Icon && <Icon className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />}
       <div className="min-w-0">
         {title && <p className="font-semibold">{title}</p>}

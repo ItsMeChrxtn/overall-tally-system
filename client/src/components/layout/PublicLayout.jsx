@@ -14,12 +14,12 @@ export default function PublicLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-ink-50">
-      <header className="no-print sticky top-0 z-20 border-b border-ink-200 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+      <header className="no-print sticky top-0 z-20 border-b border-ink-200 bg-white">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
           <Link to="/">
             <Logo name={settings?.systemName || 'Overall Tally'} sub={settings?.organizationName} />
           </Link>
-          <Link to={user ? homePathFor(user) : '/login'} className="btn-nu inline-flex h-10 items-center rounded-[10px] px-4 text-sm font-semibold text-white">
+          <Link to={user ? homePathFor(user) : '/login'} className="btn-nu inline-flex h-9 items-center rounded-md px-3.5 text-sm font-medium text-white">
             {user ? 'Back to workspace' : 'Staff sign in'}
           </Link>
         </div>

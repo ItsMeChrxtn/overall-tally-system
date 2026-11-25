@@ -19,7 +19,7 @@ function Podium({ rows, showScores, count = 3 }) {
       {top.map((r) => (
         <div key={r.number} className={cx("rounded-lg border border-t-[3px] border-ink-200 bg-white p-4", PLACE_STYLE[r.rank] || "border-t-brand-500 text-brand-700")}>
           <div className="flex items-start justify-between gap-3">
-            <p className="font-display text-3xl leading-none font-semibold">
+            <p className="text-2xl leading-none font-semibold">
               {ordinal(r.rank)}
               {r.tied && <span className="ml-1.5 align-middle font-sans text-xs font-medium text-ink-500">tie</span>}
             </p>
@@ -81,7 +81,7 @@ export default function PublicResultsPage() {
       <header className="mb-10 border-b-2 border-double border-ink-300 pb-6">
         {event.coverImage && <img src={fileUrl(event.coverImage)} alt="" className="mb-6 h-48 w-full rounded-lg object-cover sm:h-64" />}
         <p className="label-caps text-brand-700">Official results · {eventTypeLabel(event.eventType)}</p>
-        <h1 className="mt-2 font-display text-3xl leading-tight font-semibold text-ink-900 sm:text-[40px]">{event.name}</h1>
+        <h1 className="mt-1 text-2xl font-semibold text-ink-900">{event.name}</h1>
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-500">
           <span className="flex items-center gap-1.5">
             <CalendarDays className="size-4" /> {formatDate(event.eventDate, { dateStyle: 'long' })}
@@ -99,7 +99,7 @@ export default function PublicResultsPage() {
         {sections.map((s) => (
           <section key={s._id}>
             <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-display text-2xl font-semibold text-ink-900">{s.title}</h2>
+              <h2 className="text-lg font-semibold text-ink-900">{s.title}</h2>
               <p className="text-[11px] text-ink-500">
                 {s.method && `${s.method} · `}Published {formatDateTime(s.publishedAt)}
               </p>
@@ -109,7 +109,7 @@ export default function PublicResultsPage() {
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {s.awards.map((a) => (
                   <div key={a.name} className="rounded-lg border border-ink-200 border-t-2 border-t-gold-500 bg-white p-4">
-                    <p className="flex items-center gap-1.5 font-display text-lg font-semibold text-ink-900">
+                    <p className="flex items-center gap-1.5 text-[15px] font-semibold text-ink-900">
                       <Award className="size-4 text-gold-500" strokeWidth={1.75} /> {a.name}
                       {a.tied && <span className="font-sans text-xs font-normal text-ink-500">(shared)</span>}
                     </p>

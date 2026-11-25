@@ -235,7 +235,7 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
   return (
     <div className="space-y-5">
       {/* Contestant picker: stays under the top bar while scrolling */}
-      <div className="sticky top-16 z-10 -mx-4 border-y border-ink-200 bg-white/90 px-4 py-3 backdrop-blur-xl sm:mx-0 sm:rounded-xl sm:border sm:shadow-sm">
+      <div className="sticky top-14 z-10 -mx-4 border-y border-ink-200 bg-white px-4 py-2.5 sm:mx-0 sm:rounded-xl sm:border">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <p className="text-[13px] text-ink-600">
             <span className="font-semibold text-ink-900">Contestants</span> · {submittedCount} of {contestants.length} fully submitted
@@ -265,13 +265,13 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
                 onClick={() => select(String(c._id))}
                 title={`${c.name} · ${STATUS[stKey].label}`}
                 className={cx(
-                  'flex shrink-0 items-center gap-2 rounded-full border py-1 pr-3 pl-1 text-left text-[13px] transition-colors',
-                  active ? 'border-brand-600 bg-brand-600 text-white shadow-md' : 'border-ink-200 bg-white text-ink-700 hover:border-brand-300 hover:bg-brand-50'
+                  'flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1 text-left text-[13px] transition-colors',
+                  active ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-200 bg-white text-ink-700 hover:border-brand-300'
                 )}
               >
-                <span className={cx('inline-flex size-7 items-center justify-center rounded-full text-xs font-bold tabular-nums', active ? 'bg-white text-brand-700' : 'bg-ink-100 text-ink-700')}>{c.number}</span>
-                <span className="max-w-[140px] truncate font-medium">{c.name}</span>
-                <span className={cx('size-2 shrink-0 rounded-full', DOT[stKey], active && 'ring-2 ring-white')} />
+                <span className={cx('size-1.5 shrink-0 rounded-full', DOT[stKey])} />
+                <span className="font-semibold tabular-nums">{c.number}</span>
+                <span className="max-w-[120px] truncate">{c.name}</span>
               </button>
             );
           })}
@@ -280,12 +280,12 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
 
       {contestant && (
         <>
-          <Card className="nu-rise flex flex-wrap items-center gap-4 p-5">
-            <Avatar name={contestant.name} src={contestant.photo} size="xl" />
+          <Card className="flex flex-wrap items-center gap-3.5 p-4">
+            <Avatar name={contestant.name} src={contestant.photo} size="lg" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-semibold text-ink-900">
-                  <span className="mr-2 text-brand-600">#{contestant.number}</span>
+                <h2 className="text-base font-semibold text-ink-900">
+                  <span className="mr-1.5 text-brand-600">#{contestant.number}</span>
                   {contestant.name}
                 </h2>
                 <Badge tone={st.tone} dot>
@@ -300,15 +300,10 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
               )}
               {contestant.description && <p className="mt-2 text-sm text-ink-600">{contestant.description}</p>}
             </div>
-            {sections.length > 1 && (
-              <p className="rounded-xl bg-brand-50 px-3.5 py-2 text-[13px] text-brand-800">
-                <span className="font-semibold">{sections.length} categories</span> side by side, scored together
-              </p>
-            )}
           </Card>
 
           {/* Categories side by side */}
-          <div className={cx('grid items-start gap-4', cols)}>
+          <div className={cx('grid items-start gap-3', cols)}>
             {sections.map((d) => {
               const sheet = sheets[key(d.category._id, selected)];
               const locked = isLocked(d);
@@ -316,12 +311,12 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
               const pv = preview(d.criteria, values[d.category._id]);
               const filled = d.criteria.filter((c) => (values[d.category._id]?.[c.criterionId] ?? '') !== '').length;
               return (
-                <section key={d.category._id} id={`cat-${d.category._id}`} className="nu-rise scroll-mt-48 overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm">
-                  <div className="bg-gradient-to-br from-navy-900 to-brand-700 px-5 py-4 text-white">
+                <section key={d.category._id} id={`cat-${d.category._id}`} className="scroll-mt-44 overflow-hidden rounded-xl border border-ink-200 border-t-[3px] border-t-navy-900 bg-white">
+                  <div className="border-b border-ink-200 px-4 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <h3 className="font-display text-[17px] leading-snug font-semibold">{d.category.name}</h3>
-                        <p className="mt-0.5 text-xs text-white/65">{d.category.methodLabel}</p>
+                        <h3 className="text-[15px] font-semibold text-ink-900">{d.category.name}</h3>
+                        <p className="text-xs text-ink-500">{d.category.methodLabel}</p>
                       </div>
                       {sheet?.status === 'submitted' ? (
                         <Badge tone="green">
@@ -334,42 +329,43 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
                       ) : sheet?.status === 'reopened' ? (
                         <Badge tone="red">Reopened</Badge>
                       ) : (
-                        <Badge tone="gold">
+                        <span className="text-xs text-ink-500 tabular-nums">
                           {filled}/{d.criteria.length} scored
-                        </Badge>
+                        </span>
                       )}
                     </div>
-                    {d.category.instructions && <p className="mt-3 rounded-lg bg-white/10 px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line text-white/85">{d.category.instructions}</p>}
+                    {d.category.instructions && <p className="mt-2 text-[13px] leading-relaxed whitespace-pre-line text-ink-600">{d.category.instructions}</p>}
                   </div>
 
                   {sheet?.status === 'reopened' && (
-                    <div className="px-5 pt-4">
+                    <div className="px-4 pt-3">
                       <Alert tone="red" icon={RotateCcw} title="Reopened for correction">
                         {sheet.reopenReason}
                       </Alert>
                     </div>
                   )}
-                  {sheet?.status === 'submitted' && <p className="border-b border-ink-100 bg-emerald-50 px-5 py-2 text-xs text-emerald-800">Submitted {formatDateTime(sheet.submittedAt)}. Ask the event administrator if a correction is needed.</p>}
+                  {sheet?.status === 'submitted' && <p className="border-b border-ink-100 bg-ink-50 px-4 py-2 text-xs text-ink-600">Submitted {formatDateTime(sheet.submittedAt)}. Ask the event administrator if a correction is needed.</p>}
 
                   <ol className="divide-y divide-ink-100">
                     {d.criteria.map((c, n) => {
                       const err = errors[c.criterionId];
                       const i = locked ? null : ++inputIndex;
                       return (
-                        <li key={c.criterionId} className="px-5 py-4">
+                        <li key={c.criterionId} className="px-4 py-3">
                           <div className="flex items-start gap-3">
-                            <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">{n + 1}</span>
                             <div className="min-w-0 flex-1">
-                              <p className="font-semibold text-ink-900">{c.name}</p>
+                              <p className="text-sm font-medium text-ink-900">
+                                {n + 1}. {c.name}
+                              </p>
                               <p className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-ink-500">
-                                <span className="font-semibold text-gold-700">{c.weight}%</span>
+                                <span className="font-medium text-ink-700">{c.weight}%</span>
                                 <span>
                                   Score {c.minScore}–{c.maxScore}
                                   {c.decimalPlaces ? ` · up to ${c.decimalPlaces} decimal${c.decimalPlaces > 1 ? 's' : ''}` : ' · whole numbers'}
                                 </span>
                               </p>
                             </div>
-                            <div className="w-28 shrink-0">
+                            <div className="w-24 shrink-0">
                               <Input
                                 ref={(el) => {
                                   if (i !== null) inputs.current[i] = el;
@@ -390,26 +386,23 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
                                 invalid={!!err}
                                 placeholder={`/${c.maxScore}`}
                                 aria-label={`${c.name} score`}
-                                className="h-12 text-center font-display text-xl font-semibold tabular-nums"
+                                className="h-9 text-center text-base font-semibold tabular-nums"
                               />
                               {err && <p className="mt-1 text-center text-[11px] text-red-700">{err}</p>}
                             </div>
                           </div>
-                          <div className={cx('mt-3 ml-9 rounded-lg border px-3.5 py-2.5 text-[13px] leading-relaxed', c.description ? 'border-gold-100 bg-gold-50/70 text-ink-700' : 'border-dashed border-ink-200 text-ink-400')}>
-                            <p className="mb-0.5 text-[11px] font-semibold tracking-wide text-gold-700 uppercase">How to score</p>
-                            {c.description ? <p className="whitespace-pre-line">{c.description}</p> : <p>No scoring guide was given for this criterion.</p>}
-                          </div>
+                          {c.description && <p className="mt-2 rounded-md bg-ink-50 px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line text-ink-600">{c.description}</p>}
                         </li>
                       );
                     })}
                   </ol>
 
-                  <div className="flex items-center justify-between gap-3 border-t border-ink-200 bg-ink-50 px-5 py-3 text-sm">
-                    <span className="text-ink-500">Preview</span>
+                  <div className="flex items-center justify-between gap-3 border-t border-ink-200 bg-ink-50 px-4 py-2.5 text-[13px] text-ink-500">
+                    <span>Preview</span>
                     <span className="tabular-nums">
-                      Total <span className="font-display text-base font-semibold text-ink-900">{num(pv.total)}</span>
+                      Total <span className="font-semibold text-ink-900">{num(pv.total)}</span>
                       <span className="mx-2 text-ink-300">|</span>
-                      Weighted <span className="font-display text-base font-semibold text-brand-700">{num(pv.weighted)}</span>
+                      Weighted <span className="font-semibold text-brand-700">{num(pv.weighted)}</span>
                     </span>
                   </div>
                 </section>
@@ -418,11 +411,11 @@ function CombinedCriteriaScoring({ cats, reload, focusCategory }) {
           </div>
 
           {editable.length > 0 && (
-            <div className="sticky bottom-3 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 bg-white/95 px-5 py-3.5 shadow-xl backdrop-blur-xl">
-              <p className="text-[13px] text-ink-600">
+            <div className="sticky bottom-3 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3 shadow-lg">
+              <p className="text-[13px] text-ink-500">
                 {editable.length > 1 ? (
                   <>
-                    <span className="font-semibold text-ink-900">{editable.length} categories</span> will be saved and submitted together for #{contestant.number}.
+                    {editable.length} categories will be saved and submitted together.
                   </>
                 ) : (
                   'Totals are previews; official scores are computed by the server.'
@@ -586,10 +579,10 @@ export default function EventScoringPage() {
           <ChevronLeft className="size-4" /> My events
         </Link>
       )}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-ink-200 pb-5">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-ink-200 pb-4">
         <div>
-          <p className="label-caps text-brand-700">Judge {seat} score sheet</p>
-          <h1 className="mt-1 text-[22px] leading-tight font-semibold text-ink-900 sm:text-2xl">{event.name}</h1>
+          <p className="text-xs font-medium text-brand-600">Judge {seat} score sheet</p>
+          <h1 className="mt-0.5 text-xl font-semibold text-ink-900">{event.name}</h1>
           <p className="mt-1 text-sm text-ink-500">{categories.map((d) => d.category.name).join(' · ')}</p>
         </div>
         {anyOpen ? (

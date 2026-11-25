@@ -171,7 +171,7 @@ export function AwardsPanel({ awards, extras = {}, decimalPlaces = 2 }) {
     <div className="grid gap-3 p-5 sm:grid-cols-2">
       {awards.map((a) => (
         <div key={a.name} className="rounded-lg border border-ink-200 border-t-gold-500 border-t-2 bg-white p-4">
-          <p className="font-display text-[17px] font-semibold text-ink-900">{a.name}</p>
+          <p className="text-sm font-semibold text-ink-900">{a.name}</p>
           <p className="mt-0.5 text-xs text-ink-500">{a.basis === 'final' ? 'Highest final score (1st place)' : `Highest average in “${a.criterionName || '—'}”`}</p>
           {a.winners.length ? (
             <ul className="mt-3 space-y-2">

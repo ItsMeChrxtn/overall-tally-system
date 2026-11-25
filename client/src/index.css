@@ -49,12 +49,12 @@
   --color-gold-500: #f5b100;
   --color-gold-700: #7a5600;
 
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 0.875rem;
-  --radius-2xl: 1.25rem;
-  --shadow-sm: 0 1px 2px #0e16300a, 0 1px 3px #0e16300d;
-  --shadow-md: 0 2px 4px #0e16300d, 0 12px 28px -12px #1b369940;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 0.875rem;
+  --shadow-sm: 0 1px 2px #0e16300d;
+  --shadow-md: 0 4px 12px -4px #0e16301f;
   --shadow-lg: 0 6px 16px -6px #0e163029;
   --shadow-xl: 0 24px 56px -20px #0e163052;
 }
@@ -65,15 +65,14 @@
   }
   body {
     @apply bg-ink-50 text-ink-800;
-    font-size: 14.5px;
+    font-size: 14px;
   }
   ::selection {
     background: #2447c733;
   }
-  h1,
-  h2 {
+  h1 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
   }
   input[type='number']::-webkit-inner-spin-button,
   input[type='number']::-webkit-outer-spin-button {
@@ -90,7 +89,7 @@
     @apply w-full text-left text-sm;
   }
   .table-base thead th {
-    @apply border-b border-ink-200 bg-ink-50 px-3 py-2.5 text-[11px] font-semibold tracking-[0.06em] whitespace-nowrap text-ink-500 uppercase;
+    @apply border-b border-ink-200 bg-ink-50 px-3 py-2 text-xs font-medium whitespace-nowrap text-ink-500;
   }
   .table-base tbody td {
     @apply border-t border-ink-100 px-3 py-2.5 align-middle;
@@ -99,23 +98,20 @@
     @apply border-t-0;
   }
   .table-base tbody tr:hover td {
-    @apply bg-brand-50/40;
+    @apply bg-ink-50;
   }
 
   /* Small all-caps label (sidebar sections, eyebrows) */
   .label-caps {
-    @apply text-[11px] font-semibold tracking-[0.1em] text-ink-500 uppercase;
+    @apply text-xs font-medium text-ink-500;
   }
 
   /* Primary action: NU blue with a soft top light */
   .btn-nu {
-    background: linear-gradient(180deg, var(--color-brand-500), var(--color-brand-600));
-    border: 1px solid var(--color-brand-700);
-    box-shadow: 0 1px 2px #0e163026, inset 0 1px 0 #ffffff26;
+    background: var(--color-brand-600);
   }
   .btn-nu:not(:disabled):hover {
-    background: linear-gradient(180deg, var(--color-brand-600), var(--color-brand-700));
-    box-shadow: 0 6px 16px -6px #2447c799, inset 0 1px 0 #ffffff26;
+    background: var(--color-brand-700);
   }
 }
 
@@ -131,7 +127,7 @@
   }
 }
 .nu-rise {
-  animation: nu-rise 380ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation: nu-rise 200ms ease-out backwards;
 }
 @media (prefers-reduced-motion: reduce) {
   .nu-rise {
@@ -141,13 +137,12 @@
 
 /* SweetAlert2: NU look */
 div:where(.swal2-container).swal2-center.swal2-backdrop-show {
-  background: #0e163066;
-  backdrop-filter: blur(6px);
+  background: #0e163059;
 }
 .swal2-popup {
   font-family: var(--font-sans) !important;
-  border-radius: 20px !important;
-  padding: 1.75rem 1.6rem 1.4rem !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
 }
 .swal2-toast {
   border-radius: 14px !important;
@@ -155,7 +150,7 @@ div:where(.swal2-container).swal2-center.swal2-backdrop-show {
 }
 .swal2-title {
   font-family: var(--font-display) !important;
-  font-size: 1.25rem !important;
+  font-size: 1.05rem !important;
   font-weight: 600 !important;
   color: var(--color-ink-900) !important;
 }
@@ -172,15 +167,15 @@ div:where(.swal2-container).swal2-center.swal2-backdrop-show {
   gap: 10px;
 }
 .swal2-styled {
-  height: 44px;
+  height: 36px;
   margin: 0 !important;
-  padding: 0 20px !important;
-  border-radius: 10px !important;
-  font-size: 0.9rem !important;
-  font-weight: 600 !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
 }
 .swal2-styled.swal2-confirm {
-  background: linear-gradient(180deg, var(--color-brand-500), var(--color-brand-600)) !important;
+  background: var(--color-brand-600) !important;
 }
 .swal2-styled.swal2-cancel {
   background: var(--color-ink-50) !important;
